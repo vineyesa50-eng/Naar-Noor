@@ -21,13 +21,13 @@ export class BlogComponent {
       date: 'Oct 05, 2026',
       title: '5 Must-Try Dishes at Naar & Noor',
       excerpt: 'A curated guide to navigating our menu, from classic Momos to our signature flame-grilled platters.',
-      image: 'assets/grilled-food.jpg'
+      image: 'assets/5 Must-Try Dishes at Naar & Noor.jpg'
     },
     {
       date: 'Sep 28, 2026',
       title: 'The Art of Fire-Grilled Cooking',
       excerpt: 'Why we believe cooking over an open flame is the only way to truly unlock the depth of our ingredients.',
-      image: 'assets/hero.webp'
+      image: 'assets/The-Art-of-Fire-Grilled-Cooking.jpg'
     }
   ];
 }
