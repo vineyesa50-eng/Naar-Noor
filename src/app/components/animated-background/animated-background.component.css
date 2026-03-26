@@ -21,54 +21,54 @@
   overflow: hidden;
 }
 
-/* Gradient animations - simplified to avoid expensive transforms */
+/* Gradient animations - re-introducing subtle scale/rotate for visibility */
 @keyframes gradient {
   0%, 100% {
     opacity: 1;
-    transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0) scale(1) rotate(0deg);
   }
   50% {
     opacity: 0.8;
-    transform: translate3d(2%, 2%, 0);
+    transform: translate3d(2%, 2%, 0) scale(1.05) rotate(2deg);
   }
 }
 
 @keyframes gradient-slow {
   0%, 100% {
     opacity: 0.8;
-    transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0) scale(1) rotate(0deg);
   }
   50% {
     opacity: 1;
-    transform: translate3d(-2%, -2%, 0);
+    transform: translate3d(-2%, -2%, 0) scale(1.08) rotate(-2deg);
   }
 }
 
-/* Floating orb animations - simplified */
+/* Floating orb animations - re-introducing scale */
 @keyframes float {
   0%, 100% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    transform: translate3d(20px, -20px, 0);
+    transform: translate3d(20px, -20px, 0) scale(1.1);
   }
 }
 
 @keyframes float-delayed {
   0%, 100% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    transform: translate3d(-30px, 20px, 0);
+    transform: translate3d(-30px, 20px, 0) scale(0.9);
   }
 }
 
 @keyframes float-slow {
   0%, 100% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    transform: translate3d(15px, 20px, 0);
+    transform: translate3d(15px, 20px, 0) scale(1.05);
   }
 }
 

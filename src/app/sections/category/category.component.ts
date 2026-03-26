@@ -12,19 +12,19 @@ export class CategoryComponent {
   categories = [
     {
       title: 'Starters',
-      image: 'assets/Starters.jpg'
+      image: 'assets/categories/Starters.jpg'
     },
     {
       title: 'Grill & BBQ',
-      image: 'assets/Grill-BBQ.jpg'
+      image: 'assets/cinematic/Grill-BBQ.jpg'
     },
     {
       title: 'Himalayan Mains',
-      image: 'assets/Himalayan-Mains.jpg'
+      image: 'assets/categories/Himalayan-Mains.jpg'
     },
     {
       title: 'Cocktails',
-      image: 'assets/Cocktails.jpg'
+      image: 'assets/categories/Cocktails.jpg'
     }
   ];
 }
