@@ -27,7 +27,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --prefer-offline
+        run: npm ci --legacy-peer-deps
       
       - name: Run Prettier
         run: npx prettier --check "src/**/*.{ts,html,css,json}"
@@ -48,7 +48,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --prefer-offline
+        run: npm ci --legacy-peer-deps
       
       - name: Run ESLint
         run: npm run lint --if-present
@@ -69,7 +69,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --prefer-offline
+        run: npm ci --legacy-peer-deps
       
       - name: TypeScript compilation check
         run: npx tsc --noEmit
@@ -89,7 +89,10 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --prefer-offline
+        run: npm ci --legacy-peer-deps
+      
+      - name: Rebuild native modules
+        run: npm rebuild
       
       - name: Build
         run: npm run build:prod
@@ -130,7 +133,10 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --prefer-offline
+        run: npm ci --legacy-peer-deps
+      
+      - name: Rebuild native modules
+        run: npm rebuild
       
       - name: Build
         run: npm run build:prod
