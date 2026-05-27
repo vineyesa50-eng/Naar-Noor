@@ -3,147 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Naar & Noor - Best Himalayan Restaurant in Egypt | مطعم هيمالايا في مصر</title>
-  <meta name="description" content="أفضل مطعم هيمالايا في مصر - Naar & Noor offers authentic Himalayan cuisine in Egypt. Best restaurant for flame-grilled specialties, momos, and traditional mountain recipes. Reserve your table at Egypt's premier Himalayan dining destination.">
-  <meta name="keywords" content="مطعم في مصر, مطعم هيمالايا, Himalayan restaurant Egypt, best restaurant Egypt, مطاعم القاهرة, restaurants in Cairo, fine dining Egypt, Naar Noor Egypt, authentic cuisine Egypt, flame-grilled restaurant, momos Egypt, mountain cuisine, افضل مطعم في مصر, حجز مطعم, restaurant reservation Egypt, Egyptian restaurants, dining Egypt, food Egypt">
+  <title>Naar & Noor — Authentic Himalayan Restaurant</title>
+  <meta name="description" content="Experience Naar & Noor — authentic Himalayan recipes, flame-grilled specialties, and modern dining. Reserve your table or order online.">
+  <meta name="keywords" content="Himalayan restaurant, Naar Noor, flame-grilled, momos, mountain cuisine, dine-in, takeaway, delivery">
   <meta name="author" content="Naar & Noor">
-  <meta name="geo.region" content="EG">
-  <meta name="geo.placename" content="Egypt">
-  <meta name="language" content="en-US">
-  <meta name="language" content="ar-EG">
   <base href="/">
-  
-  <!-- Canonical URL -->
+
+  <!-- Canonical -->
   <link rel="canonical" href="https://www.naarnooor.com/">
-  
-  <!-- PWA Manifest -->
+
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Naar & Noor">
-  
-  <!-- Open Graph / Facebook -->
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="msapplication-TileColor" content="#0a0a0a">
+
+  <!-- Open Graph -->
   <meta property="og:type" content="restaurant">
   <meta property="og:url" content="https://www.naarnooor.com/">
-  <meta property="og:title" content="Naar & Noor - Best Himalayan Restaurant in Egypt | مطعم هيمالايا">
-  <meta property="og:description" content="أفضل مطعم هيمالايا في مصر - Experience authentic Himalayan cuisine with flame-grilled specialties and traditional recipes at Egypt's premier mountain dining destination.">
-  <meta property="og:image" content="https://naar-noor.vercel.app/assets/hero.webp">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:locale:alternate" content="ar_EG">
-  <meta property="og:site_name" content="Naar & Noor Egypt">
-  
+  <meta property="og:title" content="Naar & Noor — Authentic Himalayan Restaurant">
+  <meta property="og:description" content="Experience authentic Himalayan recipes, flame-grilled specialties, and modern dining. Reserve your table or order online.">
+  <meta property="og:image" content="https://www.naarnooor.com/assets/hero/hero.webp">
+  <meta property="og:site_name" content="Naar & Noor">
+
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://naar-noor.vercel.app/">
-  <meta name="twitter:title" content="Naar & Noor - Best Himalayan Restaurant in Egypt">
-  <meta name="twitter:description" content="أفضل مطعم هيمالايا في مصر - Authentic mountain cuisine with flame-grilled specialties. Reserve your table today!">
-  <meta name="twitter:image" content="https://naar-noor.vercel.app/assets/hero.webp">
-  
+  <meta name="twitter:title" content="Naar & Noor — Authentic Himalayan Restaurant">
+  <meta name="twitter:description" content="Authentic Himalayan cuisine with flame-grilled specialties. Reserve your table or order online.">
+  <meta name="twitter:image" content="https://www.naarnooor.com/assets/hero/hero.webp">
+
   <!-- Favicons -->
   <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
-  <link rel="manifest" href="manifest.json">
-  
-  <!-- Theme Color -->
-  <meta name="theme-color" content="#0a0a0a">
-  <meta name="msapplication-TileColor" content="#0a0a0a">
-  
-  <!-- Performance Optimization -->
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-  <link rel="dns-prefetch" href="https://code.iconify.design">
-  
-  <!-- Preconnect for faster loading -->
+
+  <!-- ── DNS / Preconnect ─────────────────────────────── -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
-  <!-- Preload critical assets -->
-  <link rel="preload" href="assets/hero/hero.webp" as="image" type="image/webp">
-  
-  <!-- Fonts with display=swap for better performance -->
-  <link href="https://fonts.googleapis.com/css2?family=Forum&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- Iconify Icons - deferred for better performance -->
+  <link rel="preconnect" href="https://code.iconify.design">
+  <link rel="dns-prefetch" href="https://code.iconify.design">
+
+  <!-- ── Critical asset preloads ──────────────────────── -->
+  <link rel="preload" href="assets/hero/hero.webp" as="image" type="image/webp" fetchpriority="high">
+
+  <!-- ── Fonts — non-render-blocking ──────────────────── -->
+  <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Forum&family=Open+Sans:wght@300;400;500;600&display=swap"
+        onload="this.rel='stylesheet'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Forum&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  </noscript>
+
+  <!-- ── Iconify — deferred ───────────────────────────── -->
   <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js" defer></script>
-  
-  <!-- Structured Data - Restaurant Schema -->
+
+  <!-- ── Structured Data ──────────────────────────────── -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Restaurant",
     "name": "Naar & Noor",
-    "image": "https://naar222noor.vercel.app/assets/hero.webp",
-    "description": "Experience authentic Himalayan cuisine with flame-grilled specialties, traditional recipes, and modern dining in a premium atmosphere.",
+    "description": "Authentic Himalayan cuisine with flame-grilled specialties, traditional recipes, and modern dining.",
     "servesCuisine": "Himalayan",
     "priceRange": "$$",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Town Centre",
-      "addressLocality": "St Peter Port",
-      "addressRegion": "Guernsey",
-      "postalCode": "GY1 2PN",
-      "addressCountry": "GG"
-    },
     "telephone": "+44 (0) 1481 123456",
     "url": "https://www.naarnooor.com",
     "menu": "https://www.naarnooor.com/#menu",
-    "acceptsReservations": "True",
-    "openingHoursSpecification": [
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-        "opens": "12:00",
-        "closes": "21:00"
-      }
-    ]
+    "acceptsReservations": "True"
   }
   </script>
-  
-  <!-- Structured Data - Local Business -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Naar & Noor",
-    "alternateName": "نار ونور",
-    "image": "https://naar-noor.vercel.app/assets/hero.webp",
-    "url": "https://naar-noor.vercel.app",
-    "telephone": "+20 2 1234 5678",
-    "priceRange": "$$",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Downtown",
-      "addressLocality": "Cairo",
-      "addressRegion": "Cairo Governorate",
-      "postalCode": "11511",
-      "addressCountry": "EG"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 30.0444,
-      "longitude": 31.2357
-    },
-    "openingHoursSpecification": [
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-        "opens": "12:00",
-        "closes": "23:00"
-      }
-    ],
-    "sameAs": [
-      "https://www.facebook.com/naarnooor",
-      "https://www.instagram.com/naarnooor"
-    ]
-  }
-  </script>
+
+  <!-- ── Splash screen styles (inline — zero network cost) ── -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: auto;
+      background: #0a0a0a;
+    }
+
+    body {
+      background: #0a0a0a;
+      font-family: 'Open Sans', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Splash overlay ── */
+    #nn-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #nn-splash.nn-fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Logo mark */
+    .nn-splash-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      animation: nn-rise 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .nn-splash-mark {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #C65A1E 0%, #8B4513 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+      box-shadow: 0 0 40px rgba(198, 90, 30, 0.35);
+      animation: nn-pulse 2.4s ease-in-out infinite;
+    }
+    .nn-splash-name {
+      font-size: 22px;
+      color: rgba(255,255,255,0.92);
+      letter-spacing: 0.04em;
+      font-weight: 300;
+    }
+    .nn-splash-sub {
+      font-size: 10px;
+      color: #C65A1E;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      margin-top: -8px;
+    }
+
+    /* Loading bar */
+    .nn-splash-bar {
+      width: 120px;
+      height: 2px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 1px;
+      overflow: hidden;
+      animation: nn-rise 0.55s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .nn-splash-bar::after {
+      content: '';
+      display: block;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, #C65A1E, transparent);
+      border-radius: 1px;
+      animation: nn-slide 1.4s ease-in-out infinite;
+    }
+
+    @keyframes nn-rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes nn-pulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(198,90,30,0.25); }
+      50%       { box-shadow: 0 0 50px rgba(198,90,30,0.55); }
+    }
+    @keyframes nn-slide {
+      0%   { transform: translateX(-250%); }
+      100% { transform: translateX(600%); }
+    }
+  </style>
 </head>
 <body>
   <script>
-    // Immediate scroll to top to prevent browser scroll restoration flicker
+    // Prevent browser scroll restoration flicker BEFORE Angular boots
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
   </script>
+
+  <!-- Splash screen — removed by AppComponent after first navigation -->
+  <div id="nn-splash" aria-hidden="true">
+    <div class="nn-splash-logo">
+      <div class="nn-splash-mark">2N</div>
+      <div>
+        <div class="nn-splash-name">Naar &amp; Noor</div>
+        <div class="nn-splash-sub">Himalayan Kitchen</div>
+      </div>
+    </div>
+    <div class="nn-splash-bar"></div>
+  </div>
+
   <app-root></app-root>
 </body>
 </html>

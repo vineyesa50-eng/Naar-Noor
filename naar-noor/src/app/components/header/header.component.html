@@ -17,7 +17,17 @@
       <a href="#locations" class="text-sm text-neutral-300 hover:text-white transition-colors duration-200">Locations</a>
     </nav>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
+      <!-- Cart button -->
+      <button (click)="cart.toggle()"
+              class="relative flex items-center justify-center w-10 h-10 rounded-xl border border-white/10 text-neutral-300 hover:text-white hover:border-white/25 transition-all duration-200">
+        <iconify-icon icon="solar:cart-large-2-linear" width="20"></iconify-icon>
+        <span *ngIf="cart.count() > 0"
+              class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-[#C65A1E] rounded-full px-1 shadow-[0_0_8px_rgba(198,90,30,0.5)]">
+          {{ cart.count() > 9 ? '9+' : cart.count() }}
+        </span>
+      </button>
+
       <a href="#reserve" class="hidden md:inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-white bg-[#C65A1E] rounded-xl hover:bg-[#a84915] hover:shadow-[0_0_20px_rgba(198,90,30,0.4)] transition-all duration-300">
         Book a Table
       </a>
@@ -28,8 +38,8 @@
   </div>
 
   <!-- Mobile Menu -->
-  <div 
-    *ngIf="mobileMenuOpen" 
+  <div
+    *ngIf="mobileMenuOpen"
     class="md:hidden absolute top-20 left-0 w-full bg-[#0a0a0a]/95 backdrop-blur-lg border-b border-white/5 animate-fadeIn">
     <nav class="flex flex-col px-6 py-4 space-y-4">
       <a href="#about" (click)="toggleMobileMenu()" class="text-base text-neutral-200 hover:text-[#C65A1E] transition-colors duration-200 py-2">About</a>

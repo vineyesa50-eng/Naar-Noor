@@ -1,11 +1,14 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CustomCalendarComponent } from '../../components/custom-calendar/custom-calendar.component';
 import { CustomDropdownComponent } from '../../components/custom-dropdown/custom-dropdown.component';
+import { ApiService } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
 
 interface ReservationForm {
   fullName: string;
+  email: string;
   phone: string;
   date: Date | null;
   time: string;
@@ -21,8 +24,12 @@ interface ReservationForm {
   styleUrls: ['./hero.component.css']
 })
 export class HeroComponent {
+  private readonly api = inject(ApiService);
+  private readonly toast = inject(ToastService);
+
   reservation: ReservationForm = {
     fullName: '',
+    email: '',
     phone: '',
     date: null,
     time: '18:00',
@@ -32,25 +39,69 @@ export class HeroComponent {
   timeSlots = ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'];
   guestOptions = ['1 Person', '2 People', '3 People', '4 People', '5 People', '6 People', '7 People', '8 People'];
 
-  onDateSelected(date: Date) {
-    this.reservation.date = date;
+  submitting = false;
+
+  onDateSelected(date: Date) { this.reservation.date = date; }
+  onTimeSelected(time: string) { this.reservation.time = time; }
+  onGuestsSelected(guests: string) { this.reservation.guests = guests; }
+
+  private parsePartySize(guests: string): number {
+    const match = guests.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 2;
   }
 
-  onTimeSelected(time: string) {
-    this.reservation.time = time;
+  private formatDate(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
-  onGuestsSelected(guests: string) {
-    this.reservation.guests = guests;
-  }
-
-  onSubmit() {
-    if (!this.reservation.fullName || !this.reservation.phone || !this.reservation.date) {
-      alert('Please fill in all required fields.');
+  onSubmit(): void {
+    if (!this.reservation.fullName.trim()) {
+      this.toast.warning('Please enter your full name.', 'Required field');
       return;
     }
-    
-    console.log('Reservation submitted:', this.reservation);
-    alert(`Thank you ${this.reservation.fullName}! Your reservation for ${this.reservation.guests} on ${this.reservation.date.toDateString()} at ${this.reservation.time} has been received. We'll contact you at ${this.reservation.phone} to confirm.`);
+    if (!this.reservation.email.trim()) {
+      this.toast.warning('Please enter your email address.', 'Required field');
+      return;
+    }
+    if (!this.reservation.phone.trim()) {
+      this.toast.warning('Please enter your phone number.', 'Required field');
+      return;
+    }
+    if (!this.reservation.date) {
+      this.toast.warning('Please select a date for your visit.', 'Required field');
+      return;
+    }
+
+    this.submitting = true;
+
+    this.api.createReservation({
+      customerName: this.reservation.fullName.trim(),
+      email: this.reservation.email.trim(),
+      phoneNumber: this.reservation.phone.trim(),
+      reservationDate: this.formatDate(this.reservation.date),
+      reservationTime: this.reservation.time,
+      partySize: this.parsePartySize(this.reservation.guests)
+    }).subscribe({
+      next: () => {
+        this.submitting = false;
+        const name = this.reservation.fullName.trim();
+        this.toast.success(
+          `Thank you, ${name}! Your table for ${this.reservation.guests} on ${this.reservation.date!.toDateString()} at ${this.reservation.time} is confirmed. We'll be in touch shortly.`
+        );
+        this.reservation = { fullName: '', email: '', phone: '', date: null, time: '18:00', guests: '2 People' };
+      },
+      error: (err) => {
+        this.submitting = false;
+        if (err.status === 400 && err.error?.errors) {
+          const messages = Object.values(err.error.errors).flat() as string[];
+          this.toast.error(messages[0] || 'Please check your details and try again.');
+        } else {
+          this.toast.error('Unable to submit. Please call us or try again.', 'Booking failed');
+        }
+      }
+    });
   }
 }

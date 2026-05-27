@@ -1,0 +1,23 @@
+.nf-ember {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f97316, #C65A1E 55%, #7c2d12 100%);
+  pointer-events: none;
+  animation: nfEmberFloat linear infinite;
+}
+
+@keyframes nfEmberFloat {
+  0%   { transform: translateY(0)      rotate(0deg)   scale(1);   opacity: 0; }
+  8%   { opacity: 0.9; }
+  85%  { opacity: 0.6; }
+  100% { transform: translateY(-100vh) rotate(480deg) scale(0.2); opacity: 0; }
+}
+
+.not-found-glow {
+  animation: nfGlow 3.5s ease-in-out infinite;
+}
+@keyframes nfGlow {
+  0%, 100% { filter: drop-shadow(0 0 18px rgba(198,90,30,0.12)); }
+  50%       { filter: drop-shadow(0 0 40px rgba(198,90,30,0.38)); }
+}

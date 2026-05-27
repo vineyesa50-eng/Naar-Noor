@@ -1,10 +1,14 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService, MenuItem } from '../../services/api.service';
+import { CartService } from '../../services/cart.service';
+import { RevealDirective } from '../../directives/scroll-reveal.directive';
 
 interface MenuItemView {
+  id: string;
   name: string;
-  price: string;
+  price: number;
+  priceFormatted: string;
   description: string;
   category: string;
   isVegetarian: boolean;
@@ -14,28 +18,39 @@ interface MenuItemView {
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RevealDirective],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css']
 })
 export class MenuComponent implements OnInit {
   private readonly api = inject(ApiService);
+  readonly cart = inject(CartService);
 
-  menuItems: MenuItemView[] = [];
+  allItems: MenuItemView[] = [];
+  filteredItems: MenuItemView[] = [];
+  categories: string[] = [];
+  activeCategory = 'All';
   loading = true;
   error = false;
+  addedId: string | null = null;
 
   ngOnInit(): void {
     this.api.getMenu().subscribe({
       next: (items: MenuItem[]) => {
-        this.menuItems = items.map(item => ({
+        this.allItems = items.map(item => ({
+          id: item.id,
           name: item.name,
-          price: `£${item.price.toFixed(2)}`,
+          price: item.price,
+          priceFormatted: `£${item.price.toFixed(2)}`,
           description: item.description,
           category: item.category,
           isVegetarian: item.isVegetarian,
           isVegan: item.isVegan
         }));
+        const unique = [...new Set(this.allItems.map(i => i.category))];
+        this.categories = ['All', ...unique];
+        this.filteredItems = this.allItems;
         this.loading = false;
       },
       error: () => {
@@ -43,5 +58,29 @@ export class MenuComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  setCategory(cat: string): void {
+    this.activeCategory = cat;
+    this.filteredItems = cat === 'All'
+      ? this.allItems
+      : this.allItems.filter(i => i.category === cat);
+  }
+
+  addToCart(item: MenuItemView): void {
+    this.cart.add({
+      menuItemId: item.id,
+      name: item.name,
+      price: item.price,
+      category: item.category
+    });
+    this.addedId = item.id;
+    setTimeout(() => {
+      if (this.addedId === item.id) this.addedId = null;
+    }, 1500);
+  }
+
+  itemCount(id: string): number {
+    return this.cart.items().find(i => i.menuItemId === id)?.quantity ?? 0;
   }
 }

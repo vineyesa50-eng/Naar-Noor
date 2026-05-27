@@ -1,0 +1,217 @@
+<div *ngIf="form" class="min-h-screen bg-[#0a0a0a] pt-24 pb-16 px-4 sm:px-6">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Back -->
+    <button (click)="goBack()" class="mb-8 flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors">
+      <iconify-icon icon="solar:arrow-left-linear" width="16"></iconify-icon>
+      Back to Menu
+    </button>
+
+    <!-- Title -->
+    <div class="mb-10">
+      <span class="text-[#C65A1E] text-xs font-medium tracking-[0.2em] uppercase mb-2 block">Your Order</span>
+      <h1 class="font-['Forum'] text-3xl sm:text-4xl text-white tracking-tight">Checkout</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14" [formGroup]="form">
+
+      <!-- LEFT: Order Summary -->
+      <div class="order-2 lg:order-1">
+        <div class="bg-[#111] rounded-2xl border border-white/5 overflow-hidden">
+          <div class="px-6 py-4 border-b border-white/5">
+            <h2 class="font-['Forum'] text-xl text-white">Your Items</h2>
+            <p class="text-xs text-neutral-500 mt-0.5">{{ cart.count() }} {{ cart.count() === 1 ? 'item' : 'items' }}</p>
+          </div>
+
+          <div class="divide-y divide-white/5">
+            <div *ngFor="let item of cart.items()" class="flex items-center justify-between px-6 py-4">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-white font-medium leading-tight truncate">{{ item.name }}</p>
+                <p class="text-xs text-neutral-500 mt-0.5">{{ item.category }}</p>
+              </div>
+              <div class="flex items-center gap-4 ml-4 shrink-0">
+                <div class="flex items-center gap-1.5">
+                  <button (click)="cart.decrement(item.menuItemId)"
+                          class="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors text-xs">−</button>
+                  <span class="text-sm text-white w-4 text-center">{{ item.quantity }}</span>
+                  <button (click)="cart.increment(item.menuItemId)"
+                          class="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors text-xs">+</button>
+                </div>
+                <span class="text-sm text-white font-medium w-16 text-right">£{{ (item.price * item.quantity).toFixed(2) }}</span>
+                <button (click)="cart.remove(item.menuItemId)" class="text-neutral-600 hover:text-red-400 transition-colors">
+                  <iconify-icon icon="solar:trash-bin-trash-linear" width="14"></iconify-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Totals -->
+          <div class="px-6 py-5 border-t border-white/5 space-y-2">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-neutral-400">Subtotal</span>
+              <span class="text-white">{{ cart.formattedTotal() }}</span>
+            </div>
+            <div *ngIf="isDelivery" class="flex items-center justify-between text-sm">
+              <span class="text-neutral-400">Delivery fee</span>
+              <span class="text-neutral-500 text-xs">To be confirmed</span>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-white/5">
+              <span class="text-sm font-medium text-white">Total</span>
+              <span class="text-lg font-medium text-white font-['Forum']">{{ cart.formattedTotal() }}</span>
+            </div>
+          </div>
+
+          <!-- Order type badge in summary -->
+          <div *ngIf="orderType" class="px-6 py-3 border-t border-white/5 flex items-center gap-2">
+            <iconify-icon
+              [attr.icon]="orderType === 'delivery' ? 'solar:delivery-linear' : orderType === 'dine-in' ? 'solar:tea-cup-linear' : 'solar:bag-5-linear'"
+              width="14" class="text-[#C65A1E]">
+            </iconify-icon>
+            <span class="text-xs text-neutral-500 capitalize">{{ orderType === 'dine-in' ? 'Dine-in' : orderType }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Form -->
+      <div class="order-1 lg:order-2 space-y-7">
+
+        <!-- ── Order type ── -->
+        <div>
+          <p class="text-xs text-neutral-500 tracking-[0.15em] uppercase mb-3">How would you like your order?</p>
+          <div class="grid grid-cols-3 gap-2.5">
+            <label *ngFor="let t of orderTypes"
+                   class="flex flex-col items-center gap-2 p-3.5 rounded-xl border cursor-pointer transition-all duration-200"
+                   [ngClass]="orderType === t.value
+                     ? 'border-[#C65A1E] bg-[#C65A1E]/8 shadow-[0_0_16px_rgba(198,90,30,0.12)]'
+                     : 'border-white/8 bg-[#111] hover:border-white/20'">
+              <input type="radio" formControlName="type" [value]="t.value" class="sr-only">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+                   [ngClass]="orderType === t.value ? 'bg-[#C65A1E]/15' : 'bg-white/5'">
+                <iconify-icon [attr.icon]="t.icon" width="18"
+                              [ngClass]="orderType === t.value ? 'text-[#C65A1E]' : 'text-neutral-500'">
+                </iconify-icon>
+              </div>
+              <span class="text-xs font-medium text-center leading-tight"
+                    [ngClass]="orderType === t.value ? 'text-white' : 'text-neutral-400'">{{ t.label }}</span>
+              <span class="text-[10px] text-neutral-600 text-center leading-tight hidden sm:block">{{ t.sub }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ── Contact details ── -->
+        <div class="space-y-4">
+          <p class="text-xs text-neutral-500 tracking-[0.15em] uppercase">Contact details</p>
+
+          <!-- Name -->
+          <div>
+            <input formControlName="customerName" type="text" placeholder="Full name"
+                   class="w-full px-4 py-3.5 bg-[#111] border rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-1 transition-colors"
+                   [ngClass]="err('customerName')
+                     ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20'
+                     : 'border-white/10 focus:border-[#C65A1E] focus:ring-[#C65A1E]/10'">
+            <p *ngIf="err('customerName')" class="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+              <iconify-icon icon="solar:danger-circle-linear" width="12"></iconify-icon>
+              <span *ngIf="f['customerName'].errors?.['required']">Your name is required.</span>
+              <span *ngIf="f['customerName'].errors?.['minlength']">Name must be at least 2 characters.</span>
+            </p>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <input formControlName="email" type="email" placeholder="Email address"
+                   class="w-full px-4 py-3.5 bg-[#111] border rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-1 transition-colors"
+                   [ngClass]="err('email')
+                     ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20'
+                     : 'border-white/10 focus:border-[#C65A1E] focus:ring-[#C65A1E]/10'">
+            <p *ngIf="err('email')" class="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+              <iconify-icon icon="solar:danger-circle-linear" width="12"></iconify-icon>
+              <span *ngIf="f['email'].errors?.['required']">Email address is required.</span>
+              <span *ngIf="f['email'].errors?.['email']">Please enter a valid email address.</span>
+            </p>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <input formControlName="phoneNumber" type="tel" placeholder="Phone number"
+                   class="w-full px-4 py-3.5 bg-[#111] border rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-1 transition-colors"
+                   [ngClass]="err('phoneNumber')
+                     ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20'
+                     : 'border-white/10 focus:border-[#C65A1E] focus:ring-[#C65A1E]/10'">
+            <p *ngIf="err('phoneNumber')" class="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+              <iconify-icon icon="solar:danger-circle-linear" width="12"></iconify-icon>
+              <span *ngIf="f['phoneNumber'].errors?.['required']">Phone number is required.</span>
+              <span *ngIf="f['phoneNumber'].errors?.['minlength']">Please enter a valid phone number.</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- ── Delivery address ── -->
+        <div *ngIf="isDelivery" class="space-y-2">
+          <p class="text-xs text-neutral-500 tracking-[0.15em] uppercase">Delivery address</p>
+          <textarea formControlName="deliveryAddress" rows="3"
+                    placeholder="Enter your full delivery address including postcode"
+                    class="w-full px-4 py-3.5 bg-[#111] border rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-1 transition-colors resize-none"
+                    [ngClass]="err('deliveryAddress')
+                      ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20'
+                      : 'border-white/10 focus:border-[#C65A1E] focus:ring-[#C65A1E]/10'"></textarea>
+          <p *ngIf="err('deliveryAddress')" class="text-xs text-red-400 flex items-center gap-1">
+            <iconify-icon icon="solar:danger-circle-linear" width="12"></iconify-icon>
+            Please enter your full delivery address.
+          </p>
+        </div>
+
+        <!-- ── Dine-in: reservation name ── -->
+        <div *ngIf="isDineIn" class="space-y-2">
+          <p class="text-xs text-neutral-500 tracking-[0.15em] uppercase">Reservation details</p>
+          <div class="rounded-xl border border-[#C65A1E]/20 bg-[#C65A1E]/5 px-4 py-3 flex items-start gap-3 mb-3">
+            <iconify-icon icon="solar:info-circle-linear" width="16" class="text-[#C65A1E] mt-0.5 shrink-0"></iconify-icon>
+            <p class="text-xs text-neutral-400 leading-relaxed">
+              Dine-in orders are linked to your table reservation. Enter the name the reservation was made under so our team can seat you and bring your order to the table.
+            </p>
+          </div>
+          <input formControlName="tableReservationName" type="text"
+                 placeholder="Name your reservation is under (e.g. John Smith)"
+                 class="w-full px-4 py-3.5 bg-[#111] border rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-1 transition-colors"
+                 [ngClass]="err('tableReservationName')
+                   ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20'
+                   : 'border-white/10 focus:border-[#C65A1E] focus:ring-[#C65A1E]/10'">
+          <p *ngIf="err('tableReservationName')" class="text-xs text-red-400 flex items-center gap-1">
+            <iconify-icon icon="solar:danger-circle-linear" width="12"></iconify-icon>
+            Please enter the name your reservation is under.
+          </p>
+          <p class="text-xs text-neutral-600">
+            No reservation yet?
+            <a href="#reserve" (click)="goBack()" class="text-[#C65A1E] hover:underline cursor-pointer">Book a table first</a>
+            before placing a dine-in order.
+          </p>
+        </div>
+
+        <!-- ── Special requests ── -->
+        <div class="space-y-2">
+          <p class="text-xs text-neutral-500 tracking-[0.15em] uppercase">
+            Special requests <span class="normal-case text-neutral-700">(optional)</span>
+          </p>
+          <textarea formControlName="notes" rows="2"
+                    placeholder="Allergies, dietary requirements, etc."
+                    class="w-full px-4 py-3.5 bg-[#111] border border-white/10 rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-[#C65A1E] focus:ring-1 focus:ring-[#C65A1E]/10 transition-colors resize-none"></textarea>
+        </div>
+
+        <!-- ── Submit ── -->
+        <button (click)="submit()" [disabled]="submitting"
+                class="w-full py-4 text-sm font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+                [ngClass]="submitting
+                  ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                  : 'bg-white text-[#0a0a0a] hover:bg-[#C65A1E] hover:text-white hover:shadow-[0_0_28px_rgba(198,90,30,0.4)]'">
+          <iconify-icon *ngIf="submitting" icon="solar:spinner-line-duotone" width="18" class="animate-spin"></iconify-icon>
+          <span>{{ submitting ? 'Placing order…' : 'Place Order' }}</span>
+          <iconify-icon *ngIf="!submitting" icon="solar:check-circle-linear" width="18"></iconify-icon>
+        </button>
+
+        <p class="text-xs text-neutral-600 text-center">
+          By placing an order you agree to our terms. We'll confirm your order by phone.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>

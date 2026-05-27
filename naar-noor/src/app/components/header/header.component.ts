@@ -1,5 +1,7 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-header',
@@ -11,8 +13,14 @@ import { CommonModule } from '@angular/common';
 })
 export class HeaderComponent {
   mobileMenuOpen = false;
+  readonly cart = inject(CartService);
+  private readonly router = inject(Router);
 
   toggleMobileMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  goHome() {
+    this.router.navigate(['/']);
   }
 }

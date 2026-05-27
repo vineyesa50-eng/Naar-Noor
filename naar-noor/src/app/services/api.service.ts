@@ -49,6 +49,28 @@ export interface CreateReservationResponse {
   id: string;
 }
 
+export interface CreateOrderRequest {
+  customerName: string;
+  email: string;
+  phoneNumber: string;
+  notes?: string;
+  type: 'collection' | 'delivery' | 'dine-in';
+  deliveryAddress?: string;
+  tableReservationName?: string;
+  items: OrderItemRequest[];
+}
+
+export interface OrderItemRequest {
+  menuItemId: string;
+  menuItemName: string;
+  unitPrice: number;
+  quantity: number;
+}
+
+export interface CreateOrderResponse {
+  id: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
@@ -71,5 +93,9 @@ export class ApiService {
 
   createReservation(data: CreateReservationRequest): Observable<CreateReservationResponse> {
     return this.http.post<CreateReservationResponse>(`${this.base}/reservations`, data);
+  }
+
+  createOrder(data: CreateOrderRequest): Observable<CreateOrderResponse> {
+    return this.http.post<CreateOrderResponse>(`${this.base}/orders`, data);
   }
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeroComponent } from '../../sections/hero/hero.component';
@@ -11,6 +11,7 @@ import { ChefsComponent } from '../../sections/chefs/chefs.component';
 import { ReviewsComponent } from '../../sections/reviews/reviews.component';
 import { BlogComponent } from '../../sections/blog/blog.component';
 import { LocationsComponent } from '../../sections/locations/locations.component';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-home',
@@ -32,4 +33,10 @@ import { LocationsComponent } from '../../sections/locations/locations.component
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent {}
+export class HomeComponent implements OnInit {
+  private readonly seo = inject(SeoService);
+
+  ngOnInit(): void {
+    this.seo.setHome();
+  }
+}

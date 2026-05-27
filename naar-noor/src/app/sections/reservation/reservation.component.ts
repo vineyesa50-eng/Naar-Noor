@@ -1,9 +1,11 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { CustomCalendarComponent } from '../../components/custom-calendar/custom-calendar.component';
 import { CustomDropdownComponent } from '../../components/custom-dropdown/custom-dropdown.component';
 import { ApiService } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
 
 interface ReservationForm {
   fullName: string;
@@ -20,20 +22,30 @@ interface ReservationForm {
   standalone: true,
   imports: [CommonModule, FormsModule, CustomCalendarComponent, CustomDropdownComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  animations: [
+    trigger('successAnim', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.9) translateY(10px)' }),
+        animate('380ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+          style({ opacity: 1, transform: 'scale(1) translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in',
+          style({ opacity: 0, transform: 'scale(0.95)' }))
+      ])
+    ])
+  ],
   templateUrl: './reservation.component.html',
   styleUrls: ['./reservation.component.css']
 })
 export class ReservationComponent {
   private readonly api = inject(ApiService);
+  private readonly toast = inject(ToastService);
 
   reservation: ReservationForm = {
-    fullName: '',
-    email: '',
-    phone: '',
-    date: null,
-    time: '18:00',
-    guests: '2 People',
-    specialRequests: ''
+    fullName: '', email: '', phone: '',
+    date: null, time: '18:00',
+    guests: '2 People', specialRequests: ''
   };
 
   timeSlots = ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'];
@@ -41,20 +53,11 @@ export class ReservationComponent {
 
   submitting = false;
   submitted = false;
-  submitError = '';
   confirmedName = '';
 
-  onDateSelected(date: Date): void {
-    this.reservation.date = date;
-  }
-
-  onTimeSelected(time: string): void {
-    this.reservation.time = time;
-  }
-
-  onGuestsSelected(guests: string): void {
-    this.reservation.guests = guests;
-  }
+  onDateSelected(date: Date): void { this.reservation.date = date; }
+  onTimeSelected(time: string): void { this.reservation.time = time; }
+  onGuestsSelected(guests: string): void { this.reservation.guests = guests; }
 
   private parsePartySize(guests: string): number {
     const match = guests.match(/\d+/);
@@ -69,22 +72,20 @@ export class ReservationComponent {
   }
 
   onSubmit(): void {
-    this.submitError = '';
-
     if (!this.reservation.fullName.trim()) {
-      this.submitError = 'Please enter your full name.';
+      this.toast.warning('Please enter your full name.', 'Required field');
       return;
     }
     if (!this.reservation.email.trim()) {
-      this.submitError = 'Please enter your email address.';
+      this.toast.warning('Please enter your email address.', 'Required field');
       return;
     }
     if (!this.reservation.phone.trim()) {
-      this.submitError = 'Please enter your phone number.';
+      this.toast.warning('Please enter your phone number.', 'Required field');
       return;
     }
     if (!this.reservation.date) {
-      this.submitError = 'Please select a date.';
+      this.toast.warning('Please select a date for your visit.', 'Required field');
       return;
     }
 
@@ -103,6 +104,10 @@ export class ReservationComponent {
         this.submitting = false;
         this.submitted = true;
         this.confirmedName = this.reservation.fullName;
+        this.toast.success(
+          `Your table for ${this.reservation.guests} on ${this.reservation.date!.toDateString()} at ${this.reservation.time} is booked. We'll contact you shortly to confirm.`,
+          `Booking Confirmed, ${this.reservation.fullName.split(' ')[0]}!`
+        );
         this.reservation = {
           fullName: '', email: '', phone: '',
           date: null, time: '18:00',
@@ -113,9 +118,9 @@ export class ReservationComponent {
         this.submitting = false;
         if (err.status === 400 && err.error?.errors) {
           const messages = Object.values(err.error.errors).flat() as string[];
-          this.submitError = messages[0] || 'Please check your details and try again.';
+          this.toast.error(messages[0] || 'Please check your details and try again.', 'Booking failed');
         } else {
-          this.submitError = 'Unable to submit your reservation. Please call us or try again.';
+          this.toast.error('Unable to submit your reservation. Please call us or try again.', 'Booking failed');
         }
       }
     });
