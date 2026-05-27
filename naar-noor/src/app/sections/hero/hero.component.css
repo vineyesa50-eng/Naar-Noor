@@ -1,1 +1,136 @@
-/* Hero section styles */
+/* ============================================================
+   HERO ANIMATIONS
+   ============================================================ */
+
+/* Ken Burns subtle zoom on background */
+.hero-bg {
+  animation: kenBurns 22s ease-out infinite alternate;
+  transform-origin: center center;
+}
+@keyframes kenBurns {
+  0%   { transform: scale(1.0) translateX(0px); }
+  100% { transform: scale(1.07) translateX(-12px); }
+}
+
+/* Tag line */
+.hero-tag {
+  animation: heroFadeUp 0.7s cubic-bezier(0.32, 0.72, 0, 1) 0.15s both;
+}
+/* Main title */
+.hero-title {
+  animation: heroFadeUp 0.8s cubic-bezier(0.32, 0.72, 0, 1) 0.3s both;
+}
+/* Subtitle */
+.hero-subtitle {
+  animation: heroFadeUp 0.8s cubic-bezier(0.32, 0.72, 0, 1) 0.5s both;
+}
+/* CTA buttons */
+.hero-cta {
+  animation: heroFadeUp 0.8s cubic-bezier(0.32, 0.72, 0, 1) 0.68s both;
+}
+/* Stats bar */
+.hero-stats {
+  animation: heroFadeUp 0.8s cubic-bezier(0.32, 0.72, 0, 1) 0.85s both;
+}
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Flame text pulsing glow */
+.flame-text {
+  animation: flamePulse 3.5s ease-in-out infinite;
+}
+@keyframes flamePulse {
+  0%, 100% {
+    text-shadow:
+      0 0 15px rgba(198,90,30,0.25),
+      0 0 35px rgba(198,90,30,0.08);
+  }
+  50% {
+    text-shadow:
+      0 0 25px rgba(198,90,30,0.55),
+      0 0 55px rgba(198,90,30,0.25),
+      0 0 90px rgba(198,90,30,0.10);
+  }
+}
+
+/* Flame glow orb behind title */
+.flame-orb {
+  animation: orbPulse 4s ease-in-out infinite;
+}
+@keyframes orbPulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(1.08); }
+}
+
+/* Scroll indicator bounce */
+.scroll-indicator {
+  animation: scrollBounce 2.2s ease-in-out infinite;
+}
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0);   opacity: 0.9; }
+  50%       { transform: translateY(8px); opacity: 0.4; }
+}
+
+/* ============================================================
+   EMBER / SPARK PARTICLES
+   ============================================================ */
+.ember {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f97316, #C65A1E 55%, #7c2d12 100%);
+  pointer-events: none;
+  animation: emberFloat linear infinite;
+}
+
+@keyframes emberFloat {
+  0%   { transform: translateY(0)    rotate(0deg)   scale(1);   opacity: 0; }
+  8%   { opacity: 1; }
+  85%  { opacity: 0.7; }
+  100% { transform: translateY(-110vh) rotate(540deg) scale(0.2); opacity: 0; }
+}
+
+.ember:nth-child(1)  { left:  5%; width: 4px; height: 4px; animation-duration:  9s; animation-delay: 0.0s; }
+.ember:nth-child(2)  { left: 13%; width: 3px; height: 3px; animation-duration: 11s; animation-delay: 1.5s; }
+.ember:nth-child(3)  { left: 21%; width: 5px; height: 5px; animation-duration:  8s; animation-delay: 3.0s; }
+.ember:nth-child(4)  { left: 29%; width: 3px; height: 3px; animation-duration: 13s; animation-delay: 0.8s; }
+.ember:nth-child(5)  { left: 37%; width: 4px; height: 4px; animation-duration: 10s; animation-delay: 2.2s; }
+.ember:nth-child(6)  { left: 45%; width: 2px; height: 2px; animation-duration: 14s; animation-delay: 4.1s; }
+.ember:nth-child(7)  { left: 54%; width: 5px; height: 5px; animation-duration:  9s; animation-delay: 1.0s; }
+.ember:nth-child(8)  { left: 63%; width: 3px; height: 3px; animation-duration: 12s; animation-delay: 5.5s; }
+.ember:nth-child(9)  { left: 71%; width: 4px; height: 4px; animation-duration:  7s; animation-delay: 0.5s; }
+.ember:nth-child(10) { left: 79%; width: 2px; height: 2px; animation-duration: 15s; animation-delay: 3.8s; }
+.ember:nth-child(11) { left: 87%; width: 3px; height: 3px; animation-duration: 10s; animation-delay: 2.7s; }
+.ember:nth-child(12) { left: 94%; width: 4px; height: 4px; animation-duration:  8s; animation-delay: 6.0s; }
+
+/* Slightly brighter secondaries */
+.ember:nth-child(3), .ember:nth-child(7) {
+  background: radial-gradient(circle at 35% 35%, #fbbf24, #f97316 55%, #C65A1E 100%);
+}
+
+/* Stats divider */
+.stats-divider {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.15), transparent);
+}
+
+/* ============================================================
+   404 PAGE
+   ============================================================ */
+.not-found-glow {
+  animation: notFoundGlow 4s ease-in-out infinite;
+}
+@keyframes notFoundGlow {
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(198,90,30,0.15)); }
+  50%       { filter: drop-shadow(0 0 40px rgba(198,90,30,0.40)); }
+}

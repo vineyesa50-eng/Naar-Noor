@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-checkout',
@@ -19,11 +20,13 @@ export class CheckoutComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly seo = inject(SeoService);
 
   form!: FormGroup;
   submitting = false;
 
   ngOnInit(): void {
+    this.seo.setCheckout();
     if (this.cart.isEmpty()) {
       this.router.navigate(['/']);
       return;

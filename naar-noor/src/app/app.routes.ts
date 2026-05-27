@@ -11,5 +11,8 @@ export const routes: Routes = [
     path: 'order-confirmed',
     loadComponent: () => import('./pages/order-confirmed/order-confirmed.component').then(m => m.OrderConfirmedComponent)
   },
-  { path: '**', redirectTo: '' }
+  {
+    path: '**',
+    loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent)
+  }
 ];

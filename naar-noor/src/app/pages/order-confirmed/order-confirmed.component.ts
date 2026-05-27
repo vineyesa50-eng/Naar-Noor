@@ -1,6 +1,7 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { SeoService } from '../../services/seo.service';
 import { trigger, transition, style, animate, keyframes } from '@angular/animations';
 
 @Component({
@@ -91,7 +92,10 @@ export class OrderConfirmedComponent implements OnInit {
     { title: 'Your food is prepared', desc: 'Freshly made with Himalayan care, ready for collection or delivery.' }
   ];
 
+  private readonly seo = inject(SeoService);
+
   ngOnInit(): void {
+    this.seo.setOrderConfirmed();
     this.orderId = this.route.snapshot.queryParamMap.get('id');
     if (this.orderId) {
       this.shortId = this.orderId.split('-')[0].toUpperCase();

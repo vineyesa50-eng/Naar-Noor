@@ -1,0 +1,83 @@
+<div class="relative min-h-screen bg-[#0a0a0a] flex items-center justify-center overflow-hidden px-4 py-20">
+
+  <!-- Background image (very subtle) -->
+  <img src="assets/hero/hero.webp" alt=""
+       class="absolute inset-0 w-full h-full object-cover opacity-[0.04] pointer-events-none select-none">
+  <div class="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/80 via-transparent to-[#0a0a0a]/90 pointer-events-none"></div>
+
+  <!-- Flame glow orbs -->
+  <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-[#C65A1E]/6 blur-[100px] pointer-events-none"></div>
+  <div class="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[300px] h-[200px] rounded-full bg-[#C65A1E]/4 blur-[80px] pointer-events-none"></div>
+
+  <!-- Ember particles -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div *ngFor="let e of embers; let i = index"
+         class="nf-ember"
+         [style.left.%]="(i * 7.3 + 3) % 97"
+         [style.width.px]="(i % 3) + 2"
+         [style.height.px]="(i % 3) + 2"
+         [style.animation-duration]="(8 + (i * 1.3) % 8) + 's'"
+         [style.animation-delay]="(i * 0.6) + 's'">
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div @fadeUp class="relative z-10 text-center max-w-xl w-full">
+
+    <!-- Mountain silhouette as decorative SVG -->
+    <div class="mb-2 opacity-20">
+      <svg viewBox="0 0 400 80" class="w-64 mx-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 80 L80 20 L140 50 L200 5 L260 45 L320 18 L400 80Z" fill="#C65A1E"/>
+      </svg>
+    </div>
+
+    <!-- 404 -->
+    <div @glitch class="not-found-glow">
+      <span class="font-['Forum'] text-[140px] sm:text-[180px] leading-none text-white/90 block tracking-tighter">
+        4<span class="text-[#C65A1E]">0</span>4
+      </span>
+    </div>
+
+    <!-- Text -->
+    <div class="mb-8 -mt-4">
+      <span class="text-[#C65A1E] text-xs font-medium tracking-[0.22em] uppercase mb-3 block">Lost in the Mountains</span>
+      <h1 class="font-['Forum'] text-2xl sm:text-3xl text-white tracking-tight mb-3">
+        This page wandered off the trail
+      </h1>
+      <p class="text-sm text-neutral-500 leading-relaxed max-w-sm mx-auto">
+        The page you're looking for has ventured too deep into the Himalayan range. Let us guide you back to warmer ground.
+      </p>
+    </div>
+
+    <!-- Countdown -->
+    <div class="mb-8 flex items-center justify-center gap-2 text-xs text-neutral-600">
+      <iconify-icon icon="solar:clock-circle-linear" width="14" class="text-neutral-700"></iconify-icon>
+      Returning home in
+      <span class="font-medium tabular-nums" [class.text-[#C65A1E]]="countdown <= 5">{{ countdown }}s</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <button (click)="goHome()"
+              class="w-full sm:w-auto px-8 py-3.5 text-sm font-medium text-[#0a0a0a] bg-white rounded-xl hover:bg-[#C65A1E] hover:text-white hover:shadow-[0_0_24px_rgba(198,90,30,0.4)] transition-all duration-300 flex items-center justify-center gap-2">
+        <iconify-icon icon="solar:home-2-linear" width="16"></iconify-icon>
+        Back to Home
+      </button>
+      <button (click)="goMenu()"
+              class="w-full sm:w-auto px-8 py-3.5 text-sm font-medium text-white border border-white/15 rounded-xl hover:bg-white/5 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-2">
+        <iconify-icon icon="solar:book-2-linear" width="16"></iconify-icon>
+        View Our Menu
+      </button>
+    </div>
+
+    <!-- Decorative spice dots -->
+    <div class="mt-14 flex items-center justify-center gap-3">
+      <div class="w-1.5 h-1.5 rounded-full bg-[#C65A1E]/40"></div>
+      <div class="w-1 h-1 rounded-full bg-[#C65A1E]/20"></div>
+      <div class="w-2 h-2 rounded-full bg-[#C65A1E]/60"></div>
+      <div class="w-1 h-1 rounded-full bg-[#C65A1E]/20"></div>
+      <div class="w-1.5 h-1.5 rounded-full bg-[#C65A1E]/40"></div>
+    </div>
+
+  </div>
+</div>
