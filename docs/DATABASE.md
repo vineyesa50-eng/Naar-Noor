@@ -1,1 +1,543 @@
-# 📊 Database Documentation\n\nDatabase schema and management guide for Naar & Noor.\n\n## Overview\n\nThe application uses **SQL Server** with **Entity Framework Core** for data access.\n\n## Database Setup\n\n### Connection String\n\nConfigure in `appsettings.json`:\n\n```json\n{\n  \"ConnectionStrings\": {\n    \"DefaultConnection\": \"Server=.;Database=NaarNoor;Trusted_Connection=true;\"\n  }\n}\n```\n\n### Creating the Database\n\n```bash\ndotnet ef database update --project src/NaarNoor.Infrastructure\n```\n\n### Dropping the Database\n\n```bash\ndotnet ef database drop --project src/NaarNoor.Infrastructure\n```\n\n## Entity Relationship Diagram\n\n```\n┌─────────────┐\n│    Chef     │\n├─────────────┤\n│ Id (PK)     │\n│ Name        │\n│ Specialty   │\n│ Bio         │\n│ ImageUrl    │\n│ CreatedAt   │\n│ UpdatedAt   │\n└─────────────┘\n\n┌──────────────────┐\n│    MenuItem      │\n├──────────────────┤\n│ Id (PK)          │\n│ Name             │\n│ Description      │\n│ Price            │\n│ Category (Enum)  │\n│ ImageUrl         │\n│ IsAvailable      │\n│ CreatedAt        │\n│ UpdatedAt        │\n└──────────────────┘\n\n┌──────────────────────┐\n│   Reservation        │\n├──────────────────────┤\n│ Id (PK)              │\n│ GuestName            │\n│ Email                │\n│ PhoneNumber          │\n│ ReservationDate      │\n│ NumberOfGuests       │\n│ SpecialRequests      │\n│ Status (Enum)        │\n│ CreatedAt            │\n│ UpdatedAt            │\n└──────────────────────┘\n\n┌──────────────────┐\n│     Review       │\n├──────────────────┤\n│ Id (PK)          │\n│ GuestName        │\n│ Rating           │\n│ Comment          │\n│ IsApproved       │\n│ CreatedAt        │\n│ UpdatedAt        │\n└──────────────────┘\n\n┌──────────────────────┐\n│  ContactInquiry      │\n├──────────────────────┤\n│ Id (PK)              │\n│ Name                 │\n│ Email                │\n│ Subject              │\n│ Message              │\n│ CreatedAt            │\n└──────────────────────┘\n```\n\n## Tables\n\n### Chefs\n\n**Purpose:** Store information about restaurant chefs.\n\n**Schema:**\n\n```sql\nCREATE TABLE Chefs (\n    Id INT PRIMARY KEY IDENTITY(1,1),\n    Name NVARCHAR(100) NOT NULL,\n    Specialty NVARCHAR(100) NOT NULL,\n    Bio NVARCHAR(500),\n    ImageUrl NVARCHAR(MAX),\n    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),\n    UpdatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()\n);\n```\n\n**Indexes:**\n- Primary Key: `Id`\n\n**Sample Data:**\n\n```sql\nINSERT INTO Chefs (Name, Specialty, Bio, ImageUrl)\nVALUES \n  ('Chef Arjun', 'Indian Cuisine', 'Expert in traditional Indian cooking', 'https://example.com/chef-arjun.jpg'),\n  ('Chef Maya', 'Fusion Cuisine', 'Creative fusion chef', 'https://example.com/chef-maya.jpg');\n```\n\n---\n\n### MenuItems\n\n**Purpose:** Store restaurant menu items.\n\n**Schema:**\n\n```sql\nCREATE TABLE MenuItems (\n    Id INT PRIMARY KEY IDENTITY(1,1),\n    Name NVARCHAR(100) NOT NULL,\n    Description NVARCHAR(500),\n    Price DECIMAL(10, 2) NOT NULL,\n    Category NVARCHAR(50) NOT NULL,\n    ImageUrl NVARCHAR(MAX),\n    IsAvailable BIT NOT NULL DEFAULT 1,\n    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),\n    UpdatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()\n);\n```\n\n**Indexes:**\n- Primary Key: `Id`\n- Index: `Category`\n\n**Sample Data:**\n\n```sql\nINSERT INTO MenuItems (Name, Description, Price, Category, ImageUrl, IsAvailable)\nVALUES \n  ('Tandoori Chicken', 'Grilled chicken marinated in yogurt and spices', 14.99, 'Mains', 'https://example.com/tandoori-chicken.jpg', 1),\n  ('Butter Chicken', 'Tender chicken in creamy tomato sauce', 13.99, 'Mains', 'https://example.com/butter-chicken.jpg', 1);\n```\n\n---\n\n### Reservations\n\n**Purpose:** Store restaurant reservations.\n\n**Schema:**\n\n```sql\nCREATE TABLE Reservations (\n    Id INT PRIMARY KEY IDENTITY(1,1),\n    GuestName NVARCHAR(100) NOT NULL,\n    Email NVARCHAR(100) NOT NULL,\n    PhoneNumber NVARCHAR(20) NOT NULL,\n    ReservationDate DATETIME2 NOT NULL,\n    NumberOfGuests INT NOT NULL,\n    SpecialRequests NVARCHAR(500),\n    Status NVARCHAR(50) NOT NULL DEFAULT 'Pending',\n    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),\n    UpdatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()\n);\n```\n\n**Indexes:**\n- Primary Key: `Id`\n- Index: `ReservationDate`\n- Index: `Email`\n\n**Constraints:**\n- `NumberOfGuests` must be between 1 and 20\n- `ReservationDate` must be in the future\n\n---\n\n### Reviews\n\n**Purpose:** Store customer reviews.\n\n**Schema:**\n\n```sql\nCREATE TABLE Reviews (\n    Id INT PRIMARY KEY IDENTITY(1,1),\n    GuestName NVARCHAR(100) NOT NULL,\n    Rating INT NOT NULL,\n    Comment NVARCHAR(1000),\n    IsApproved BIT NOT NULL DEFAULT 0,\n    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),\n    UpdatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()\n);\n```\n\n**Indexes:**\n- Primary Key: `Id`\n- Index: `IsApproved`\n\n**Constraints:**\n- `Rating` must be between 1 and 5\n\n**Sample Data:**\n\n```sql\nINSERT INTO Reviews (GuestName, Rating, Comment, IsApproved)\nVALUES \n  ('Alice Johnson', 5, 'Excellent food and service!', 1),\n  ('Bob Wilson', 4, 'Great atmosphere and delicious food', 1);\n```\n\n---\n\n### ContactInquiries\n\n**Purpose:** Store contact form submissions.\n\n**Schema:**\n\n```sql\nCREATE TABLE ContactInquiries (\n    Id INT PRIMARY KEY IDENTITY(1,1),\n    Name NVARCHAR(100) NOT NULL,\n    Email NVARCHAR(100) NOT NULL,\n    Subject NVARCHAR(200) NOT NULL,\n    Message NVARCHAR(1000) NOT NULL,\n    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()\n);\n```\n\n**Indexes:**\n- Primary Key: `Id`\n- Index: `Email`\n\n---\n\n## Enums\n\n### MenuCategory\n\n```csharp\npublic enum MenuCategory\n{\n    Starters = 0,\n    Mains = 1,\n    Cocktails = 2\n}\n```\n\n### ReservationStatus\n\n```csharp\npublic enum ReservationStatus\n{\n    Pending = 0,\n    Confirmed = 1,\n    Cancelled = 2,\n    Completed = 3\n}\n```\n\n## Migrations\n\n### Creating a Migration\n\n```bash\ndotnet ef migrations add MigrationName --project src/NaarNoor.Infrastructure\n```\n\n### Applying Migrations\n\n```bash\ndotnet ef database update --project src/NaarNoor.Infrastructure\n```\n\n### Viewing Migration History\n\n```bash\ndotnet ef migrations list --project src/NaarNoor.Infrastructure\n```\n\n### Reverting to Previous Migration\n\n```bash\ndotnet ef database update PreviousMigrationName --project src/NaarNoor.Infrastructure\n```\n\n## Data Seeding\n\nInitial data is seeded in `DatabaseSeeder.cs`:\n\n```csharp\npublic static async Task SeedAsync(ApplicationDbContext context)\n{\n    if (!context.Chefs.Any())\n    {\n        var chefs = new List<Chef>\n        {\n            new Chef { Name = \"Chef Arjun\", Specialty = \"Indian Cuisine\", ... },\n            new Chef { Name = \"Chef Maya\", Specialty = \"Fusion Cuisine\", ... }\n        };\n        context.Chefs.AddRange(chefs);\n        await context.SaveChangesAsync();\n    }\n}\n```\n\n## Backup and Restore\n\n### Backup Database\n\n```sql\nBACKUP DATABASE NaarNoor\nTO DISK = 'C:\\Backups\\NaarNoor.bak';\n```\n\n### Restore Database\n\n```sql\nRESTORE DATABASE NaarNoor\nFROM DISK = 'C:\\Backups\\NaarNoor.bak';\n```\n\n## Performance Optimization\n\n### Indexes\n\nKey indexes for performance:\n\n```sql\n-- Reservation queries\nCREATE INDEX IX_Reservations_ReservationDate ON Reservations(ReservationDate);\nCREATE INDEX IX_Reservations_Email ON Reservations(Email);\n\n-- Menu queries\nCREATE INDEX IX_MenuItems_Category ON MenuItems(Category);\nCREATE INDEX IX_MenuItems_IsAvailable ON MenuItems(IsAvailable);\n\n-- Review queries\nCREATE INDEX IX_Reviews_IsApproved ON Reviews(IsApproved);\n```\n\n### Query Optimization\n\n**Use AsNoTracking for read-only queries:**\n\n```csharp\nvar chefs = await context.Chefs\n    .AsNoTracking()\n    .ToListAsync();\n```\n\n**Use Select for specific columns:**\n\n```csharp\nvar chefNames = await context.Chefs\n    .Select(c => new { c.Id, c.Name })\n    .ToListAsync();\n```\n\n## Maintenance\n\n### Check Database Integrity\n\n```sql\nDBCC CHECKDB (NaarNoor);\n```\n\n### Rebuild Indexes\n\n```sql\nALTER INDEX ALL ON Chefs REBUILD;\nALTER INDEX ALL ON MenuItems REBUILD;\nALTER INDEX ALL ON Reservations REBUILD;\nALTER INDEX ALL ON Reviews REBUILD;\nALTER INDEX ALL ON ContactInquiries REBUILD;\n```\n\n### Update Statistics\n\n```sql\nEXEC sp_updatestats;\n```\n\n## Troubleshooting\n\n### Connection Issues\n\n1. Verify SQL Server is running\n2. Check connection string\n3. Verify database exists\n4. Check user permissions\n\n### Migration Issues\n\n```bash\n# Remove last migration\ndotnet ef migrations remove --project src/NaarNoor.Infrastructure\n\n# Reapply migrations\ndotnet ef database update --project src/NaarNoor.Infrastructure\n```\n\n---\n\nFor more information, see the [Entity Framework Core Documentation](https://docs.microsoft.com/ef/core/).\n
+# 🗄️ Database Documentation
+
+Complete database schema and management guide for **Naar & Noor**.
+
+---
+
+## 📊 Overview
+
+- **Database:** SQL Server 2019+
+- **ORM:** Entity Framework Core 8.0
+- **Migration Tool:** EF Core Migrations
+- **Connection:** Remote SQL Server
+
+---
+
+## 🔌 Connection Configuration
+
+### Connection String
+
+Update in `appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=db54355.public.databaseasp.net; Database=db54355; User Id=db54355; Password=eW!62%tA=bT7; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;"
+  }
+}
+```
+
+### Environment-Specific Configuration
+
+**Development:**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=NaarNoor;Trusted_Connection=true;"
+  }
+}
+```
+
+**Production:**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=db54355.public.databaseasp.net;Database=db54355;User Id=db54355;Password=***;"
+  }
+}
+```
+
+---
+
+## 📐 Entity Relationship Diagram
+
+```
+┌─────────────────┐
+│     Chefs       │
+├─────────────────┤
+│ Id (PK)         │
+│ Name            │
+│ Specialty       │
+│ Bio             │
+│ ImageUrl        │
+│ CreatedAt       │
+│ UpdatedAt       │
+└─────────────────┘
+
+┌─────────────────┐
+│   MenuItems     │
+├─────────────────┤
+│ Id (PK)         │
+│ Name            │
+│ Description     │
+│ Price           │
+│ Category        │
+│ ImageUrl        │
+│ IsAvailable     │
+│ CreatedAt       │
+│ UpdatedAt       │
+└─────────────────┘
+
+┌─────────────────┐
+│  Reservations   │
+├─────────────────┤
+│ Id (PK)         │
+│ GuestName       │
+│ Email           │
+│ PhoneNumber     │
+│ ReservationDate │
+│ NumberOfGuests  │
+│ SpecialRequests │
+│ Status          │
+│ CreatedAt       │
+│ UpdatedAt       │
+└─────────────────┘
+
+┌─────────────────┐
+│    Reviews      │
+├─────────────────┤
+│ Id (PK)         │
+│ GuestName       │
+│ Rating          │
+│ Comment         │
+│ IsApproved      │
+│ CreatedAt       │
+│ UpdatedAt       │
+└─────────────────┘
+
+┌──────────────────┐
+│ ContactInquiries │
+├──────────────────┤
+│ Id (PK)          │
+│ Name             │
+│ Email            │
+│ Subject          │
+│ Message          │
+│ CreatedAt        │
+└──────────────────┘
+```
+
+---
+
+## 📋 Table Schemas
+
+### Chefs
+
+Stores information about restaurant chefs.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `Id` | INT | PRIMARY KEY, IDENTITY | Unique identifier |
+| `Name` | NVARCHAR(100) | NOT NULL | Chef's full name |
+| `Specialty` | NVARCHAR(100) | NOT NULL | Culinary specialty |
+| `Bio` | NVARCHAR(500) | NULL | Biography |
+| `ImageUrl` | NVARCHAR(500) | NULL | Profile image URL |
+| `CreatedAt` | DATETIME2 | NOT NULL | Creation timestamp |
+| `UpdatedAt` | DATETIME2 | NOT NULL | Last update timestamp |
+
+**Indexes:**
+- `PK_Chefs` on `Id`
+
+**Sample Data:**
+
+```sql
+INSERT INTO Chefs (Name, Specialty, Bio, ImageUrl, CreatedAt, UpdatedAt)
+VALUES 
+  ('Chef Arjun', 'Indian Cuisine', 'Expert in traditional Indian cooking', 
+   'https://example.com/chefs/arjun.jpg', GETUTCDATE(), GETUTCDATE()),
+  ('Chef Maya', 'Fusion Cuisine', 'Creative fusion chef', 
+   'https://example.com/chefs/maya.jpg', GETUTCDATE(), GETUTCDATE());
+```
+
+---
+
+### MenuItems
+
+Stores restaurant menu items.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `Id` | INT | PRIMARY KEY, IDENTITY | Unique identifier |
+| `Name` | NVARCHAR(100) | NOT NULL | Item name |
+| `Description` | NVARCHAR(500) | NULL | Item description |
+| `Price` | DECIMAL(10,2) | NOT NULL | Price in USD |
+| `Category` | NVARCHAR(50) | NOT NULL | Category (Starters, Mains, Cocktails) |
+| `ImageUrl` | NVARCHAR(500) | NULL | Item image URL |
+| `IsAvailable` | BIT | NOT NULL, DEFAULT 1 | Availability status |
+| `CreatedAt` | DATETIME2 | NOT NULL | Creation timestamp |
+| `UpdatedAt` | DATETIME2 | NOT NULL | Last update timestamp |
+
+**Indexes:**
+- `PK_MenuItems` on `Id`
+- `IX_MenuItems_Category` on `Category`
+- `IX_MenuItems_IsAvailable` on `IsAvailable`
+
+**Sample Data:**
+
+```sql
+INSERT INTO MenuItems (Name, Description, Price, Category, ImageUrl, IsAvailable, CreatedAt, UpdatedAt)
+VALUES 
+  ('Tandoori Chicken', 'Grilled chicken marinated in yogurt and spices', 14.99, 'Mains', 
+   'https://example.com/menu/tandoori.jpg', 1, GETUTCDATE(), GETUTCDATE()),
+  ('Butter Chicken', 'Tender chicken in creamy tomato sauce', 13.99, 'Mains', 
+   'https://example.com/menu/butter-chicken.jpg', 1, GETUTCDATE(), GETUTCDATE());
+```
+
+---
+
+### Reservations
+
+Stores customer reservations.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `Id` | INT | PRIMARY KEY, IDENTITY | Unique identifier |
+| `GuestName` | NVARCHAR(100) | NOT NULL | Guest's name |
+| `Email` | NVARCHAR(100) | NOT NULL | Guest's email |
+| `PhoneNumber` | NVARCHAR(20) | NOT NULL | Contact number |
+| `ReservationDate` | DATETIME2 | NOT NULL | Reservation date/time |
+| `NumberOfGuests` | INT | NOT NULL, CHECK (1-20) | Number of guests |
+| `SpecialRequests` | NVARCHAR(500) | NULL | Special requests |
+| `Status` | NVARCHAR(50) | NOT NULL, DEFAULT 'Pending' | Status (Pending, Confirmed, Cancelled, Completed) |
+| `CreatedAt` | DATETIME2 | NOT NULL | Creation timestamp |
+| `UpdatedAt` | DATETIME2 | NOT NULL | Last update timestamp |
+
+**Indexes:**
+- `PK_Reservations` on `Id`
+- `IX_Reservations_ReservationDate` on `ReservationDate`
+- `IX_Reservations_Email` on `Email`
+- `IX_Reservations_Status` on `Status`
+
+**Constraints:**
+- `NumberOfGuests` must be between 1 and 20
+- `ReservationDate` must be in the future (enforced by application)
+
+---
+
+### Reviews
+
+Stores customer reviews.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `Id` | INT | PRIMARY KEY, IDENTITY | Unique identifier |
+| `GuestName` | NVARCHAR(100) | NOT NULL | Reviewer's name |
+| `Rating` | INT | NOT NULL, CHECK (1-5) | Rating (1-5 stars) |
+| `Comment` | NVARCHAR(1000) | NULL | Review comment |
+| `IsApproved` | BIT | NOT NULL, DEFAULT 0 | Approval status |
+| `CreatedAt` | DATETIME2 | NOT NULL | Creation timestamp |
+| `UpdatedAt` | DATETIME2 | NOT NULL | Last update timestamp |
+
+**Indexes:**
+- `PK_Reviews` on `Id`
+- `IX_Reviews_IsApproved` on `IsApproved`
+- `IX_Reviews_Rating` on `Rating`
+
+**Constraints:**
+- `Rating` must be between 1 and 5
+
+---
+
+### ContactInquiries
+
+Stores contact form submissions.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `Id` | INT | PRIMARY KEY, IDENTITY | Unique identifier |
+| `Name` | NVARCHAR(100) | NOT NULL | Sender's name |
+| `Email` | NVARCHAR(100) | NOT NULL | Sender's email |
+| `Subject` | NVARCHAR(200) | NOT NULL | Inquiry subject |
+| `Message` | NVARCHAR(1000) | NOT NULL | Inquiry message |
+| `CreatedAt` | DATETIME2 | NOT NULL | Creation timestamp |
+
+**Indexes:**
+- `PK_ContactInquiries` on `Id`
+- `IX_ContactInquiries_Email` on `Email`
+- `IX_ContactInquiries_CreatedAt` on `CreatedAt`
+
+---
+
+## 🔄 Migrations
+
+### Create New Migration
+
+```bash
+dotnet ef migrations add MigrationName --project src/NaarNoor.Infrastructure
+```
+
+### Apply Migrations
+
+```bash
+dotnet ef database update --project src/NaarNoor.Infrastructure
+```
+
+### Apply Specific Migration
+
+```bash
+dotnet ef database update MigrationName --project src/NaarNoor.Infrastructure
+```
+
+### List All Migrations
+
+```bash
+dotnet ef migrations list --project src/NaarNoor.Infrastructure
+```
+
+### Remove Last Migration
+
+```bash
+dotnet ef migrations remove --project src/NaarNoor.Infrastructure
+```
+
+### Generate SQL Script
+
+```bash
+dotnet ef migrations script --project src/NaarNoor.Infrastructure --output migration.sql
+```
+
+---
+
+## 🌱 Data Seeding
+
+Initial data is seeded automatically on application startup via `DatabaseSeeder.cs`:
+
+```csharp
+public static async Task SeedAsync(ApplicationDbContext context)
+{
+    // Seed Chefs
+    if (!await context.Chefs.AnyAsync())
+    {
+        var chefs = new List<Chef>
+        {
+            new Chef 
+            { 
+                Name = "Chef Arjun", 
+                Specialty = "Indian Cuisine",
+                Bio = "Expert in traditional Indian cooking",
+                ImageUrl = "/assets/chefs/arjun.jpg"
+            },
+            new Chef 
+            { 
+                Name = "Chef Maya", 
+                Specialty = "Fusion Cuisine",
+                Bio = "Creative fusion chef",
+                ImageUrl = "/assets/chefs/maya.jpg"
+            }
+        };
+        
+        context.Chefs.AddRange(chefs);
+        await context.SaveChangesAsync();
+    }
+}
+```
+
+---
+
+## 🔍 Query Optimization
+
+### Use AsNoTracking for Read-Only Queries
+
+```csharp
+var chefs = await _context.Chefs
+    .AsNoTracking()
+    .ToListAsync();
+```
+
+### Select Only Required Columns
+
+```csharp
+var chefNames = await _context.Chefs
+    .Select(c => new { c.Id, c.Name })
+    .ToListAsync();
+```
+
+### Use Pagination
+
+```csharp
+var menuItems = await _context.MenuItems
+    .Skip((page - 1) * pageSize)
+    .Take(pageSize)
+    .ToListAsync();
+```
+
+### Eager Loading
+
+```csharp
+var reservations = await _context.Reservations
+    .Include(r => r.Guest)
+    .ToListAsync();
+```
+
+---
+
+## 💾 Backup & Restore
+
+### Backup Database
+
+```sql
+BACKUP DATABASE db54355
+TO DISK = 'C:\Backups\NaarNoor_Backup.bak'
+WITH FORMAT, COMPRESSION;
+```
+
+### Restore Database
+
+```sql
+RESTORE DATABASE db54355
+FROM DISK = 'C:\Backups\NaarNoor_Backup.bak'
+WITH REPLACE;
+```
+
+### Automated Backup Script
+
+```sql
+-- Create backup job (SQL Server Agent)
+EXEC sp_add_job @job_name = 'NaarNoor_Daily_Backup';
+
+EXEC sp_add_jobstep
+    @job_name = 'NaarNoor_Daily_Backup',
+    @step_name = 'Backup Database',
+    @command = 'BACKUP DATABASE db54355 TO DISK = ''C:\Backups\NaarNoor_$(ESCAPE_SQUOTE(DATE)).bak''';
+
+EXEC sp_add_schedule
+    @schedule_name = 'Daily at 2 AM',
+    @freq_type = 4,
+    @freq_interval = 1,
+    @active_start_time = 020000;
+```
+
+---
+
+## 🛠️ Maintenance
+
+### Check Database Integrity
+
+```sql
+DBCC CHECKDB (db54355);
+```
+
+### Rebuild Indexes
+
+```sql
+ALTER INDEX ALL ON Chefs REBUILD;
+ALTER INDEX ALL ON MenuItems REBUILD;
+ALTER INDEX ALL ON Reservations REBUILD;
+ALTER INDEX ALL ON Reviews REBUILD;
+ALTER INDEX ALL ON ContactInquiries REBUILD;
+```
+
+### Update Statistics
+
+```sql
+UPDATE STATISTICS Chefs;
+UPDATE STATISTICS MenuItems;
+UPDATE STATISTICS Reservations;
+UPDATE STATISTICS Reviews;
+UPDATE STATISTICS ContactInquiries;
+```
+
+### Shrink Database (Use Sparingly)
+
+```sql
+DBCC SHRINKDATABASE (db54355, 10);
+```
+
+---
+
+## 📈 Performance Monitoring
+
+### View Active Connections
+
+```sql
+SELECT 
+    session_id,
+    login_name,
+    host_name,
+    program_name,
+    status
+FROM sys.dm_exec_sessions
+WHERE database_id = DB_ID('db54355');
+```
+
+### Find Slow Queries
+
+```sql
+SELECT TOP 10
+    qs.execution_count,
+    qs.total_elapsed_time / qs.execution_count AS avg_elapsed_time,
+    SUBSTRING(qt.text, (qs.statement_start_offset/2)+1,
+        ((CASE qs.statement_end_offset
+            WHEN -1 THEN DATALENGTH(qt.text)
+            ELSE qs.statement_end_offset
+        END - qs.statement_start_offset)/2) + 1) AS query_text
+FROM sys.dm_exec_query_stats qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) qt
+ORDER BY avg_elapsed_time DESC;
+```
+
+### Check Index Usage
+
+```sql
+SELECT 
+    OBJECT_NAME(s.object_id) AS TableName,
+    i.name AS IndexName,
+    s.user_seeks,
+    s.user_scans,
+    s.user_lookups,
+    s.user_updates
+FROM sys.dm_db_index_usage_stats s
+INNER JOIN sys.indexes i ON s.object_id = i.object_id AND s.index_id = i.index_id
+WHERE database_id = DB_ID('db54355')
+ORDER BY s.user_seeks + s.user_scans + s.user_lookups DESC;
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Connection Issues
+
+**Problem:** Cannot connect to database
+
+**Solutions:**
+1. Verify SQL Server is running
+2. Check connection string
+3. Verify firewall allows port 1433
+4. Check user permissions
+
+### Migration Errors
+
+**Problem:** Migration fails to apply
+
+**Solutions:**
+```bash
+# Remove last migration
+dotnet ef migrations remove --project src/NaarNoor.Infrastructure
+
+# Drop database and recreate
+dotnet ef database drop --project src/NaarNoor.Infrastructure
+dotnet ef database update --project src/NaarNoor.Infrastructure
+```
+
+### Deadlocks
+
+**Problem:** Deadlock detected
+
+**Solutions:**
+1. Use proper transaction isolation levels
+2. Keep transactions short
+3. Access tables in consistent order
+4. Use `WITH (NOLOCK)` for read queries (use cautiously)
+
+---
+
+## 🔗 Related Documentation
+
+- [Backend Guide](./BACKEND.md) - API architecture
+- [API Documentation](./API.md) - API endpoints
+- [Deployment Guide](./DEPLOYMENT.md) - Production setup
+
+---
+
+**Need Help?** Check the [Troubleshooting Guide](./TROUBLESHOOTING.md).

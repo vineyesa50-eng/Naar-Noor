@@ -1,1 +1,556 @@
-# 🔧 Backend Development Guide\n\nThis guide covers backend development for the Naar & Noor .NET API.\n\n## Project Setup\n\n### Prerequisites\n\n- .NET 8.0 SDK or higher\n- SQL Server (local or remote)\n- Visual Studio or Visual Studio Code\n\n### Installation\n\n```bash\ncd api-server\ndotnet restore\n```\n\n### Running the Application\n\n**Development Mode:**\n```bash\n./run-dev.sh\n```\n\nOr on Windows:\n```bash\ndotnet run --project src/NaarNoor.API/NaarNoor.API.csproj\n```\n\nThe API will be available at `http://localhost:5000`\n\n**Swagger Documentation:**\n```\nhttp://localhost:5000/swagger\n```\n\n## Project Structure\n\n```\napi-server/\n├── src/\n│   ├── NaarNoor.API/                    # API Layer\n│   ├── NaarNoor.Application/            # Business Logic\n│   ├── NaarNoor.Domain/                 # Domain Entities\n│   └── NaarNoor.Infrastructure/         # Data Access\n└── NaarNoor.sln                         # Solution File\n```\n\n## Architecture Layers\n\n### 1. API Layer (NaarNoor.API)\n\nHandles HTTP requests and responses.\n\n**Key Files:**\n- `Program.cs` - Application configuration\n- `Controllers/` - API endpoints\n- `appsettings.json` - Configuration settings\n\n**Example Controller:**\n\n```csharp\nusing Microsoft.AspNetCore.Mvc;\nusing NaarNoor.Application.Chefs.Queries.GetChefs;\nusing MediatR;\n\nnamespace NaarNoor.API.Controllers;\n\n[ApiController]\n[Route(\"api/[controller]\")]\npublic class ChefsController : ControllerBase\n{\n    private readonly IMediator _mediator;\n\n    public ChefsController(IMediator mediator)\n    {\n        _mediator = mediator;\n    }\n\n    [HttpGet]\n    public async Task<IActionResult> GetChefs()\n    {\n        var query = new GetChefsQuery();\n        var result = await _mediator.Send(query);\n        return Ok(result);\n    }\n}\n```\n\n### 2. Application Layer (NaarNoor.Application)\n\nContains business logic using CQRS pattern.\n\n**Commands (Write Operations):**\n\n```csharp\nusing MediatR;\n\nnamespace NaarNoor.Application.Reservations.Commands.CreateReservation;\n\npublic class CreateReservationCommand : IRequest<int>\n{\n    public string GuestName { get; set; }\n    public string Email { get; set; }\n    public string PhoneNumber { get; set; }\n    public DateTime ReservationDate { get; set; }\n    public int NumberOfGuests { get; set; }\n    public string SpecialRequests { get; set; }\n}\n```\n\n**Command Handler:**\n\n```csharp\nusing MediatR;\nusing NaarNoor.Domain.Entities;\nusing NaarNoor.Application.Common.Interfaces;\n\nnamespace NaarNoor.Application.Reservations.Commands.CreateReservation;\n\npublic class CreateReservationCommandHandler : IRequestHandler<CreateReservationCommand, int>\n{\n    private readonly IApplicationDbContext _context;\n\n    public CreateReservationCommandHandler(IApplicationDbContext context)\n    {\n        _context = context;\n    }\n\n    public async Task<int> Handle(CreateReservationCommand request, CancellationToken cancellationToken)\n    {\n        var reservation = new Reservation\n        {\n            GuestName = request.GuestName,\n            Email = request.Email,\n            PhoneNumber = request.PhoneNumber,\n            ReservationDate = request.ReservationDate,\n            NumberOfGuests = request.NumberOfGuests,\n            SpecialRequests = request.SpecialRequests\n        };\n\n        _context.Reservations.Add(reservation);\n        await _context.SaveChangesAsync(cancellationToken);\n\n        return reservation.Id;\n    }\n}\n```\n\n**Queries (Read Operations):**\n\n```csharp\nusing MediatR;\n\nnamespace NaarNoor.Application.Chefs.Queries.GetChefs;\n\npublic class GetChefsQuery : IRequest<List<ChefDto>>\n{\n}\n```\n\n**Query Handler:**\n\n```csharp\nusing MediatR;\nusing Microsoft.EntityFrameworkCore;\nusing NaarNoor.Application.Common.Interfaces;\n\nnamespace NaarNoor.Application.Chefs.Queries.GetChefs;\n\npublic class GetChefsQueryHandler : IRequestHandler<GetChefsQuery, List<ChefDto>>\n{\n    private readonly IApplicationDbContext _context;\n\n    public GetChefsQueryHandler(IApplicationDbContext context)\n    {\n        _context = context;\n    }\n\n    public async Task<List<ChefDto>> Handle(GetChefsQuery request, CancellationToken cancellationToken)\n    {\n        return await _context.Chefs\n            .Select(c => new ChefDto\n            {\n                Id = c.Id,\n                Name = c.Name,\n                Specialty = c.Specialty,\n                Bio = c.Bio,\n                ImageUrl = c.ImageUrl\n            })\n            .ToListAsync(cancellationToken);\n    }\n}\n```\n\n### 3. Domain Layer (NaarNoor.Domain)\n\nContains core business entities.\n\n**Entity Example:**\n\n```csharp\nusing NaarNoor.Domain.Common;\n\nnamespace NaarNoor.Domain.Entities;\n\npublic class Chef : BaseEntity\n{\n    public string Name { get; set; }\n    public string Specialty { get; set; }\n    public string Bio { get; set; }\n    public string ImageUrl { get; set; }\n}\n```\n\n**Base Entity:**\n\n```csharp\nnamespace NaarNoor.Domain.Common;\n\npublic abstract class BaseEntity\n{\n    public int Id { get; set; }\n    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;\n    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;\n}\n```\n\n### 4. Infrastructure Layer (NaarNoor.Infrastructure)\n\nHandles data access and external services.\n\n**DbContext:**\n\n```csharp\nusing Microsoft.EntityFrameworkCore;\nusing NaarNoor.Domain.Entities;\nusing NaarNoor.Application.Common.Interfaces;\n\nnamespace NaarNoor.Infrastructure.Data;\n\npublic class ApplicationDbContext : DbContext, IApplicationDbContext\n{\n    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)\n        : base(options)\n    {\n    }\n\n    public DbSet<Chef> Chefs { get; set; }\n    public DbSet<MenuItem> MenuItems { get; set; }\n    public DbSet<Reservation> Reservations { get; set; }\n    public DbSet<Review> Reviews { get; set; }\n    public DbSet<ContactInquiry> ContactInquiries { get; set; }\n\n    protected override void OnModelCreating(ModelBuilder modelBuilder)\n    {\n        base.OnModelCreating(modelBuilder);\n        // Apply configurations\n    }\n}\n```\n\n**Entity Configuration:**\n\n```csharp\nusing Microsoft.EntityFrameworkCore;\nusing Microsoft.EntityFrameworkCore.Metadata.Builders;\nusing NaarNoor.Domain.Entities;\n\nnamespace NaarNoor.Infrastructure.Data.Configurations;\n\npublic class ChefConfiguration : IEntityTypeConfiguration<Chef>\n{\n    public void Configure(EntityTypeBuilder<Chef> builder)\n    {\n        builder.HasKey(c => c.Id);\n\n        builder.Property(c => c.Name)\n            .IsRequired()\n            .HasMaxLength(100);\n\n        builder.Property(c => c.Specialty)\n            .IsRequired()\n            .HasMaxLength(100);\n\n        builder.Property(c => c.Bio)\n            .HasMaxLength(500);\n    }\n}\n```\n\n## Database Migrations\n\n### Creating a Migration\n\n```bash\ndotnet ef migrations add InitialCreate --project src/NaarNoor.Infrastructure\n```\n\n### Applying Migrations\n\n```bash\ndotnet ef database update --project src/NaarNoor.Infrastructure\n```\n\n### Removing a Migration\n\n```bash\ndotnet ef migrations remove --project src/NaarNoor.Infrastructure\n```\n\n## Dependency Injection\n\nDependencies are configured in `Program.cs`:\n\n```csharp\nvar builder = WebApplicationBuilder.CreateBuilder(args);\n\n// Add services\nbuilder.Services.AddApplicationServices();\nbuilder.Services.AddInfrastructureServices(builder.Configuration);\n\nvar app = builder.Build();\n\napp.MapControllers();\napp.Run();\n```\n\n## Validation\n\n**Validator Example:**\n\n```csharp\nusing FluentValidation;\n\nnamespace NaarNoor.Application.Reservations.Commands.CreateReservation;\n\npublic class CreateReservationCommandValidator : AbstractValidator<CreateReservationCommand>\n{\n    public CreateReservationCommandValidator()\n    {\n        RuleFor(x => x.GuestName)\n            .NotEmpty().WithMessage(\"Guest name is required\")\n            .MaximumLength(100).WithMessage(\"Guest name must not exceed 100 characters\");\n\n        RuleFor(x => x.Email)\n            .NotEmpty().WithMessage(\"Email is required\")\n            .EmailAddress().WithMessage(\"Email must be valid\");\n\n        RuleFor(x => x.ReservationDate)\n            .GreaterThan(DateTime.Now).WithMessage(\"Reservation date must be in the future\");\n\n        RuleFor(x => x.NumberOfGuests)\n            .GreaterThan(0).WithMessage(\"Number of guests must be greater than 0\")\n            .LessThanOrEqualTo(20).WithMessage(\"Maximum 20 guests allowed\");\n    }\n}\n```\n\n## Error Handling\n\n**Custom Exception:**\n\n```csharp\nnamespace NaarNoor.Application.Common.Exceptions;\n\npublic class NotFoundException : Exception\n{\n    public NotFoundException(string message) : base(message)\n    {\n    }\n}\n```\n\n**Global Exception Handler Middleware:**\n\n```csharp\npublic class ExceptionHandlingMiddleware\n{\n    private readonly RequestDelegate _next;\n\n    public ExceptionHandlingMiddleware(RequestDelegate next)\n    {\n        _next = next;\n    }\n\n    public async Task InvokeAsync(HttpContext context)\n    {\n        try\n        {\n            await _next(context);\n        }\n        catch (Exception ex)\n        {\n            context.Response.ContentType = \"application/json\";\n            context.Response.StatusCode = StatusCodes.Status500InternalServerError;\n            await context.Response.WriteAsJsonAsync(new { message = ex.Message });\n        }\n    }\n}\n```\n\n## Testing\n\n### Unit Test Example\n\n```csharp\nusing Xunit;\nusing Moq;\nusing NaarNoor.Application.Chefs.Queries.GetChefs;\nusing NaarNoor.Application.Common.Interfaces;\n\npublic class GetChefsQueryHandlerTests\n{\n    [Fact]\n    public async Task Handle_ReturnsListOfChefs()\n    {\n        // Arrange\n        var mockContext = new Mock<IApplicationDbContext>();\n        var handler = new GetChefsQueryHandler(mockContext.Object);\n\n        // Act\n        var result = await handler.Handle(new GetChefsQuery(), CancellationToken.None);\n\n        // Assert\n        Assert.NotNull(result);\n    }\n}\n```\n\n## API Endpoints\n\n### Chefs\n- `GET /api/chefs` - Get all chefs\n\n### Menu Items\n- `GET /api/menu` - Get all menu items\n\n### Reservations\n- `GET /api/reservations` - Get all reservations\n- `POST /api/reservations` - Create new reservation\n\n### Reviews\n- `GET /api/reviews` - Get approved reviews\n\n### Contact\n- `POST /api/contact` - Submit contact inquiry\n\n### Health\n- `GET /health` - Health check\n\n## Best Practices\n\n1. **SOLID Principles**: Follow SOLID design principles\n2. **DRY**: Don't repeat yourself\n3. **Error Handling**: Implement comprehensive error handling\n4. **Logging**: Use structured logging\n5. **Validation**: Validate all inputs\n6. **Async/Await**: Use async operations\n7. **Unit Tests**: Write unit tests for business logic\n8. **Documentation**: Document complex logic\n\n## Debugging\n\n### Visual Studio\n\n1. Set breakpoints by clicking on line numbers\n2. Press F5 to start debugging\n3. Use the Debug menu for step operations\n\n### Console Logging\n\n```csharp\nConsole.WriteLine($\"Debug: {variable}\");\n```\n\n## Performance Tips\n\n1. **Query Optimization**: Use `.AsNoTracking()` for read-only queries\n2. **Pagination**: Implement pagination for large datasets\n3. **Caching**: Cache frequently accessed data\n4. **Async Operations**: Use async/await for I/O operations\n5. **Indexing**: Create database indexes for frequently queried columns\n\n---\n\nFor more information, visit the [.NET Documentation](https://docs.microsoft.com/dotnet/).\n
+# 🔧 Backend Development Guide
+
+Complete guide to developing the **Naar & Noor** .NET API backend.
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **.NET SDK 8.0+**
+- **SQL Server 2019+**
+- **Visual Studio** or **VS Code** with C# extension
+
+### Installation
+
+```bash
+cd api-server
+dotnet restore
+```
+
+### Running the Application
+
+```bash
+dotnet run --project src/NaarNoor.API/NaarNoor.API.csproj
+```
+
+✅ **API running at:** `http://localhost:8080`  
+✅ **Swagger docs at:** `http://localhost:8080/swagger`
+
+---
+
+## 📁 Project Structure
+
+```
+api-server/
+├── src/
+│   ├── NaarNoor.API/              # API Layer (Controllers, Middleware)
+│   ├── NaarNoor.Application/      # Business Logic (CQRS)
+│   ├── NaarNoor.Domain/           # Domain Entities & Rules
+│   └── NaarNoor.Infrastructure/   # Data Access & External Services
+└── NaarNoor.sln                   # Solution File
+```
+
+---
+
+## 🏗️ Architecture Layers
+
+The backend follows **Clean Architecture** with **CQRS** pattern:
+
+```
+┌─────────────────────────────────────┐
+│    API Layer (Controllers)          │  ← HTTP Requests/Responses
+├─────────────────────────────────────┤
+│    Application Layer                │  ← Business Logic (Commands/Queries)
+│    (Commands, Queries, Handlers)    │
+├─────────────────────────────────────┤
+│    Domain Layer                     │  ← Core Business Entities & Rules
+│    (Entities, Enums, Interfaces)    │
+├─────────────────────────────────────┤
+│    Infrastructure Layer             │  ← Database, External Services
+│    (DbContext, Repositories)        │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 🎯 Layer 1: API Layer
+
+### Controllers
+
+Controllers handle HTTP requests and delegate to MediatR handlers.
+
+**Example: ChefsController.cs**
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using NaarNoor.Application.Chefs.Queries.GetChefs;
+
+namespace NaarNoor.API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ChefsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public ChefsController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    /// <summary>
+    /// Get all chefs
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetChefs()
+    {
+        var query = new GetChefsQuery();
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+}
+```
+
+### Middleware
+
+Custom middleware is organized in the `Middleware/` folder:
+
+- **ExceptionHandlingMiddleware** - Global error handling
+- **SecurityHeadersMiddleware** - Security headers
+- **CorsMiddleware** - CORS configuration
+- **AuthorizationMiddleware** - Authentication/authorization
+
+---
+
+## 💼 Layer 2: Application Layer
+
+### CQRS Pattern
+
+**Commands** = Write operations (Create, Update, Delete)  
+**Queries** = Read operations (Get, List, Search)
+
+### Commands (Write Operations)
+
+**CreateReservationCommand.cs**
+
+```csharp
+using MediatR;
+
+namespace NaarNoor.Application.Reservations.Commands.CreateReservation;
+
+public class CreateReservationCommand : IRequest<int>
+{
+    public string GuestName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
+    public DateTime ReservationDate { get; set; }
+    public int NumberOfGuests { get; set; }
+    public string? SpecialRequests { get; set; }
+}
+```
+
+**CreateReservationCommandHandler.cs**
+
+```csharp
+using MediatR;
+using NaarNoor.Domain.Entities;
+using NaarNoor.Application.Common.Interfaces;
+
+namespace NaarNoor.Application.Reservations.Commands.CreateReservation;
+
+public class CreateReservationCommandHandler 
+    : IRequestHandler<CreateReservationCommand, int>
+{
+    private readonly IApplicationDbContext _context;
+
+    public CreateReservationCommandHandler(IApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<int> Handle(
+        CreateReservationCommand request, 
+        CancellationToken cancellationToken)
+    {
+        var reservation = new Reservation
+        {
+            GuestName = request.GuestName,
+            Email = request.Email,
+            PhoneNumber = request.PhoneNumber,
+            ReservationDate = request.ReservationDate,
+            NumberOfGuests = request.NumberOfGuests,
+            SpecialRequests = request.SpecialRequests,
+            Status = ReservationStatus.Pending
+        };
+
+        _context.Reservations.Add(reservation);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return reservation.Id;
+    }
+}
+```
+
+### Queries (Read Operations)
+
+**GetChefsQuery.cs**
+
+```csharp
+using MediatR;
+
+namespace NaarNoor.Application.Chefs.Queries.GetChefs;
+
+public class GetChefsQuery : IRequest<List<ChefDto>>
+{
+}
+```
+
+**GetChefsQueryHandler.cs**
+
+```csharp
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using NaarNoor.Application.Common.Interfaces;
+
+namespace NaarNoor.Application.Chefs.Queries.GetChefs;
+
+public class GetChefsQueryHandler : IRequestHandler<GetChefsQuery, List<ChefDto>>
+{
+    private readonly IApplicationDbContext _context;
+
+    public GetChefsQueryHandler(IApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<List<ChefDto>> Handle(
+        GetChefsQuery request, 
+        CancellationToken cancellationToken)
+    {
+        return await _context.Chefs
+            .Select(c => new ChefDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Specialty = c.Specialty,
+                Bio = c.Bio,
+                ImageUrl = c.ImageUrl
+            })
+            .ToListAsync(cancellationToken);
+    }
+}
+```
+
+### Validation with FluentValidation
+
+**CreateReservationCommandValidator.cs**
+
+```csharp
+using FluentValidation;
+
+namespace NaarNoor.Application.Reservations.Commands.CreateReservation;
+
+public class CreateReservationCommandValidator 
+    : AbstractValidator<CreateReservationCommand>
+{
+    public CreateReservationCommandValidator()
+    {
+        RuleFor(x => x.GuestName)
+            .NotEmpty().WithMessage("Guest name is required")
+            .MaximumLength(100).WithMessage("Guest name must not exceed 100 characters");
+
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email is required")
+            .EmailAddress().WithMessage("Email must be valid");
+
+        RuleFor(x => x.PhoneNumber)
+            .NotEmpty().WithMessage("Phone number is required");
+
+        RuleFor(x => x.ReservationDate)
+            .GreaterThan(DateTime.Now)
+            .WithMessage("Reservation date must be in the future");
+
+        RuleFor(x => x.NumberOfGuests)
+            .GreaterThan(0).WithMessage("Number of guests must be greater than 0")
+            .LessThanOrEqualTo(20).WithMessage("Maximum 20 guests allowed");
+    }
+}
+```
+
+---
+
+## 🏛️ Layer 3: Domain Layer
+
+### Entities
+
+**Chef.cs**
+
+```csharp
+using NaarNoor.Domain.Common;
+
+namespace NaarNoor.Domain.Entities;
+
+public class Chef : BaseEntity
+{
+    public string Name { get; set; } = string.Empty;
+    public string Specialty { get; set; } = string.Empty;
+    public string Bio { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
+}
+```
+
+**BaseEntity.cs**
+
+```csharp
+namespace NaarNoor.Domain.Common;
+
+public abstract class BaseEntity
+{
+    public int Id { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+```
+
+### Enums
+
+**ReservationStatus.cs**
+
+```csharp
+namespace NaarNoor.Domain.Enums;
+
+public enum ReservationStatus
+{
+    Pending = 0,
+    Confirmed = 1,
+    Cancelled = 2,
+    Completed = 3
+}
+```
+
+---
+
+## 🗄️ Layer 4: Infrastructure Layer
+
+### DbContext
+
+**ApplicationDbContext.cs**
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using NaarNoor.Domain.Entities;
+using NaarNoor.Application.Common.Interfaces;
+
+namespace NaarNoor.Infrastructure.Data;
+
+public class ApplicationDbContext : DbContext, IApplicationDbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<Chef> Chefs { get; set; }
+    public DbSet<MenuItem> MenuItems { get; set; }
+    public DbSet<Reservation> Reservations { get; set; }
+    public DbSet<Review> Reviews { get; set; }
+    public DbSet<ContactInquiry> ContactInquiries { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+    }
+}
+```
+
+### Entity Configuration
+
+**ChefConfiguration.cs**
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NaarNoor.Domain.Entities;
+
+namespace NaarNoor.Infrastructure.Data.Configurations;
+
+public class ChefConfiguration : IEntityTypeConfiguration<Chef>
+{
+    public void Configure(EntityTypeBuilder<Chef> builder)
+    {
+        builder.HasKey(c => c.Id);
+
+        builder.Property(c => c.Name)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(c => c.Specialty)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(c => c.Bio)
+            .HasMaxLength(500);
+
+        builder.Property(c => c.ImageUrl)
+            .HasMaxLength(500);
+    }
+}
+```
+
+---
+
+## 🗃️ Database Migrations
+
+### Create Migration
+
+```bash
+dotnet ef migrations add MigrationName --project src/NaarNoor.Infrastructure
+```
+
+### Apply Migration
+
+```bash
+dotnet ef database update --project src/NaarNoor.Infrastructure
+```
+
+### Remove Last Migration
+
+```bash
+dotnet ef migrations remove --project src/NaarNoor.Infrastructure
+```
+
+### List Migrations
+
+```bash
+dotnet ef migrations list --project src/NaarNoor.Infrastructure
+```
+
+---
+
+## 🔌 Dependency Injection
+
+**Program.cs**
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Add application services
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+var app = builder.Build();
+
+// Configure middleware pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseCors("AllowAll");
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
+```
+
+---
+
+## ✅ Best Practices
+
+| Practice | Description |
+|----------|-------------|
+| **SOLID Principles** | Follow Single Responsibility, Open/Closed, etc. |
+| **DRY** | Don't Repeat Yourself - extract common logic |
+| **Async/Await** | Use async operations for I/O-bound work |
+| **Error Handling** | Implement comprehensive exception handling |
+| **Logging** | Use structured logging with Serilog |
+| **Validation** | Validate all inputs with FluentValidation |
+| **Unit Tests** | Write tests for business logic |
+| **Documentation** | Document complex logic with XML comments |
+
+---
+
+## 🧪 Testing
+
+### Unit Test Example
+
+```csharp
+using Xunit;
+using Moq;
+using NaarNoor.Application.Chefs.Queries.GetChefs;
+using NaarNoor.Application.Common.Interfaces;
+
+public class GetChefsQueryHandlerTests
+{
+    [Fact]
+    public async Task Handle_ReturnsListOfChefs()
+    {
+        // Arrange
+        var mockContext = new Mock<IApplicationDbContext>();
+        var handler = new GetChefsQueryHandler(mockContext.Object);
+        var query = new GetChefsQuery();
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(result);
+    }
+}
+```
+
+---
+
+## 🐛 Debugging
+
+### Visual Studio
+
+1. Set breakpoints by clicking line numbers
+2. Press **F5** to start debugging
+3. Use **Step Over (F10)** and **Step Into (F11)**
+4. Inspect variables in the **Locals** window
+
+### Console Logging
+
+```csharp
+Console.WriteLine($"Debug: {variable}");
+_logger.LogInformation("Processing request for {Id}", id);
+```
+
+---
+
+## ⚡ Performance Optimization
+
+| Technique | Description |
+|-----------|-------------|
+| **AsNoTracking()** | Use for read-only queries |
+| **Pagination** | Implement for large datasets |
+| **Caching** | Cache frequently accessed data |
+| **Indexing** | Add database indexes |
+| **Async Operations** | Use async/await for I/O |
+| **Connection Pooling** | Enabled by default in EF Core |
+
+### Example: Optimized Query
+
+```csharp
+var chefs = await _context.Chefs
+    .AsNoTracking()
+    .Where(c => c.IsActive)
+    .OrderBy(c => c.Name)
+    .ToListAsync(cancellationToken);
+```
+
+---
+
+## 🔗 Useful Resources
+
+- [.NET Documentation](https://docs.microsoft.com/dotnet/)
+- [Entity Framework Core](https://docs.microsoft.com/ef/core/)
+- [MediatR](https://github.com/jbogard/MediatR)
+- [FluentValidation](https://fluentvalidation.net/)
+
+---
+
+**Need Help?** Check the [API Documentation](./API.md) or [Troubleshooting Guide](./TROUBLESHOOTING.md).

@@ -199,28 +199,44 @@ dotnet test
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+We welcome contributions from the community! Please read our guidelines before getting started.
 
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### 📋 Quick Contributing Guide
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### 📚 Contributing Resources
+
+- 📖 [Contributing Guidelines](docs/CONTRIBUTING.md) - Detailed contribution process
+- 📜 [Code of Conduct](CODE_OF_CONDUCT.md) - Community standards
+- 🔒 [Security Policy](SECURITY.md) - Reporting vulnerabilities
+- 📝 [Changelog](CHANGELOG.md) - Project history
 
 ---
 
 ## 📝 License
 
-This project is licensed under the MIT License - see [LICENSE.md](LICENSE.md) for details.
+This project is licensed under the **MIT License** - see [LICENSE.md](LICENSE.md) for details.
 
 ---
 
-## 📞 Support
+## 📞 Support & Community
 
-- 📖 **Documentation**: Check [docs/](docs/) folder
-- 🐛 **Issues**: [GitHub Issues](https://github.com/Mostafa-SAID7/Naar-Noor/issues)
+### 🆘 Getting Help
+
+- 📖 **Documentation**: Browse our comprehensive [docs/](docs/) folder
+- 🐛 **Bug Reports**: [Create an issue](https://github.com/Mostafa-SAID7/Naar-Noor/issues/new?template=bug_report.md)
+- ✨ **Feature Requests**: [Request a feature](https://github.com/Mostafa-SAID7/Naar-Noor/issues/new?template=feature_request.md)
+- 📚 **Documentation Issues**: [Report docs issues](https://github.com/Mostafa-SAID7/Naar-Noor/issues/new?template=documentation.md)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/Mostafa-SAID7/Naar-Noor/discussions)
+
+### 🔒 Security
+
+Found a security vulnerability? Please read our [Security Policy](SECURITY.md) and report it responsibly.
 
 ---
 

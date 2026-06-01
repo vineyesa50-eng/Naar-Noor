@@ -1,1 +1,772 @@
-# 🔧 Troubleshooting Guide\n\nCommon issues and solutions for Naar & Noor development and deployment.\n\n## Frontend Issues\n\n### Port 4200 Already in Use\n\n**Problem:** `Port 4200 is already in use`\n\n**Solution:**\n\n```bash\n# Use a different port\nnpm run dev -- --port 4300\n```\n\nOr kill the process using port 4200:\n\n```bash\n# Windows\nnetstat -ano | findstr :4200\ntaskkill /PID <PID> /F\n\n# macOS/Linux\nlsof -i :4200\nkill -9 <PID>\n```\n\n### Module Not Found Error\n\n**Problem:** `Cannot find module '@angular/core'`\n\n**Solution:**\n\n```bash\ncd naar-noor\nrm -rf node_modules package-lock.json\nnpm install\n```\n\n### Build Fails\n\n**Problem:** Build process fails with errors\n\n**Solution:**\n\n1. Clear Angular cache:\n```bash\nng cache clean\n```\n\n2. Rebuild:\n```bash\nnpm run build\n```\n\n3. Check for TypeScript errors:\n```bash\nng lint\n```\n\n### CORS Error\n\n**Problem:** `Access to XMLHttpRequest blocked by CORS policy`\n\n**Solution:**\n\nEnsure backend CORS is configured:\n\n```csharp\nbuilder.Services.AddCors(options =>\n{\n    options.AddPolicy(\"AllowAll\", policy =>\n    {\n        policy.AllowAnyOrigin()\n              .AllowAnyMethod()\n              .AllowAnyHeader();\n    });\n});\n\napp.UseCors(\"AllowAll\");\n```\n\n### API Calls Not Working\n\n**Problem:** API requests fail or return 404\n\n**Solution:**\n\n1. Verify backend is running:\n```bash\ncurl http://localhost:5000/health\n```\n\n2. Check API URL in service:\n```typescript\nprivate apiUrl = 'http://localhost:5000/api';\n```\n\n3. Verify endpoint exists in backend\n\n### Styling Issues\n\n**Problem:** Tailwind CSS classes not applied\n\n**Solution:**\n\n1. Rebuild Tailwind:\n```bash\nnpm run build\n```\n\n2. Check `tailwind.config.js` includes correct paths:\n```javascript\ncontent: [\n  \"./src/**/*.{html,ts}\",\n]\n```\n\n3. Verify `styles.css` includes Tailwind directives:\n```css\n@tailwind base;\n@tailwind components;\n@tailwind utilities;\n```\n\n## Backend Issues\n\n### Port 5000 Already in Use\n\n**Problem:** `Address already in use`\n\n**Solution:**\n\n```bash\n# Use a different port\ndotnet run --project src/NaarNoor.API/NaarNoor.API.csproj --urls \"http://localhost:5001\"\n```\n\nOr kill the process:\n\n```bash\n# Windows\nnetstat -ano | findstr :5000\ntaskkill /PID <PID> /F\n\n# macOS/Linux\nlsof -i :5000\nkill -9 <PID>\n```\n\n### Database Connection Failed\n\n**Problem:** `Cannot open database \"NaarNoor\" requested by the login`\n\n**Solution:**\n\n1. Verify SQL Server is running\n2. Check connection string in `appsettings.json`:\n```json\n{\n  \"ConnectionStrings\": {\n    \"DefaultConnection\": \"Server=.;Database=NaarNoor;Trusted_Connection=true;\"\n  }\n}\n```\n\n3. Create database if it doesn't exist:\n```bash\ndotnet ef database create --project src/NaarNoor.Infrastructure\n```\n\n4. Apply migrations:\n```bash\ndotnet ef database update --project src/NaarNoor.Infrastructure\n```\n\n### Migration Issues\n\n**Problem:** `Unable to create a 'DbContext' of type 'ApplicationDbContext'`\n\n**Solution:**\n\n1. Ensure connection string is configured\n2. Remove problematic migration:\n```bash\ndotnet ef migrations remove --project src/NaarNoor.Infrastructure\n```\n\n3. Reapply migrations:\n```bash\ndotnet ef database update --project src/NaarNoor.Infrastructure\n```\n\n### Build Fails\n\n**Problem:** Build fails with compilation errors\n\n**Solution:**\n\n1. Clean solution:\n```bash\ndotnet clean\n```\n\n2. Restore packages:\n```bash\ndotnet restore\n```\n\n3. Rebuild:\n```bash\ndotnet build\n```\n\n### Swagger Not Loading\n\n**Problem:** Swagger UI returns 404\n\n**Solution:**\n\n1. Verify Swagger is configured in `Program.cs`:\n```csharp\nbuilder.Services.AddSwaggerGen();\n\nvar app = builder.Build();\n\nif (app.Environment.IsDevelopment())\n{\n    app.UseSwagger();\n    app.UseSwaggerUI();\n}\n```\n\n2. Access at correct URL: `http://localhost:5000/swagger`\n\n### Validation Errors\n\n**Problem:** `One or more validation errors occurred`\n\n**Solution:**\n\n1. Check request body matches expected format\n2. Verify all required fields are provided\n3. Check field types and constraints\n4. Review validation rules in command validators\n\n## Database Issues\n\n### Cannot Connect to Database\n\n**Problem:** `Cannot open server 'localhost' requested by the login`\n\n**Solution:**\n\n1. Verify SQL Server is running:\n```bash\n# Windows\nsc query MSSQLSERVER\n\n# macOS/Linux\nsudo systemctl status mssql-server\n```\n\n2. Check connection string\n3. Verify firewall allows port 1433\n4. Check SQL Server authentication settings\n\n### Database Locked\n\n**Problem:** `Database is locked`\n\n**Solution:**\n\n1. Check for active connections:\n```sql\nSELECT * FROM sys.dm_exec_sessions WHERE database_id = DB_ID('NaarNoor')\n```\n\n2. Kill blocking sessions:\n```sql\nKILL <session_id>\n```\n\n### Corrupted Database\n\n**Problem:** `Logical consistency-based I/O error`\n\n**Solution:**\n\n1. Run integrity check:\n```sql\nDBCC CHECKDB (NaarNoor);\n```\n\n2. Restore from backup if needed\n3. Contact database administrator\n\n## Performance Issues\n\n### Slow API Responses\n\n**Problem:** API endpoints respond slowly\n\n**Solution:**\n\n1. Check database query performance:\n```csharp\nvar query = context.MenuItems\n    .AsNoTracking()\n    .Where(m => m.IsAvailable);\n```\n\n2. Add indexes to frequently queried columns\n3. Implement caching\n4. Check server resources (CPU, memory)\n\n### High Memory Usage\n\n**Problem:** Application uses excessive memory\n\n**Solution:**\n\n1. Check for memory leaks\n2. Implement pagination for large datasets\n3. Use `AsNoTracking()` for read-only queries\n4. Dispose of resources properly\n\n### Slow Frontend\n\n**Problem:** Frontend is slow or unresponsive\n\n**Solution:**\n\n1. Check bundle size:\n```bash\nng build --stats-json\nwebpack-bundle-analyzer dist/lost-yeti/browser/stats.json\n```\n\n2. Implement lazy loading\n3. Optimize images\n4. Use OnPush change detection\n5. Minimize HTTP requests\n\n## Deployment Issues\n\n### Application Won't Start\n\n**Problem:** Application crashes on startup\n\n**Solution:**\n\n1. Check logs for errors\n2. Verify environment variables\n3. Check connection strings\n4. Ensure database is accessible\n5. Verify all dependencies are installed\n\n### SSL Certificate Issues\n\n**Problem:** `SSL certificate problem`\n\n**Solution:**\n\n1. Verify certificate is valid\n2. Check certificate expiration date\n3. Ensure certificate matches domain\n4. Update certificate if expired\n\n### Deployment Fails\n\n**Problem:** Deployment process fails\n\n**Solution:**\n\n1. Check deployment logs\n2. Verify all files are included\n3. Check permissions\n4. Verify environment configuration\n5. Test locally first\n\n## Git Issues\n\n### Merge Conflicts\n\n**Problem:** `CONFLICT (content merge)`\n\n**Solution:**\n\n1. Open conflicted file\n2. Resolve conflicts manually\n3. Stage resolved files:\n```bash\ngit add <file>\n```\n\n4. Complete merge:\n```bash\ngit commit -m \"Resolve merge conflicts\"\n```\n\n### Detached HEAD\n\n**Problem:** `HEAD detached at <commit>`\n\n**Solution:**\n\n```bash\n# Return to main branch\ngit checkout main\n\n# Or create new branch from current state\ngit checkout -b new-branch\n```\n\n### Large File Issues\n\n**Problem:** `File too large to push`\n\n**Solution:**\n\n1. Use Git LFS for large files:\n```bash\ngit lfs install\ngit lfs track \"*.psd\"\n```\n\n2. Or remove file from history:\n```bash\ngit filter-branch --tree-filter 'rm -f <file>' HEAD\n```\n\n## Getting Help\n\n1. Check this troubleshooting guide\n2. Review project documentation\n3. Search GitHub issues\n4. Create new issue with:\n   - Error message\n   - Steps to reproduce\n   - Environment details\n   - Relevant logs\n\n## Reporting Issues\n\nWhen reporting issues, include:\n\n- **Environment**: OS, Node version, .NET version\n- **Error Message**: Full error text\n- **Steps to Reproduce**: Exact steps to trigger issue\n- **Expected Behavior**: What should happen\n- **Actual Behavior**: What actually happens\n- **Logs**: Relevant error logs\n- **Screenshots**: If applicable\n\n---\n\nFor more help, see the [Contributing Guide](./CONTRIBUTING.md) or open an issue on GitHub.\n
+# 🔧 Troubleshooting Guide
+
+Common issues and solutions for **Naar & Noor** development and deployment.
+
+---
+
+## 🎨 Frontend Issues
+
+### Port Already in Use
+
+**Problem:** `Error: Port 5000 is already in use`
+
+**Solutions:**
+
+**Option 1: Use Different Port**
+```bash
+npm run dev -- --port 4300
+```
+
+**Option 2: Kill Process (Windows)**
+```cmd
+netstat -ano | findstr :5000
+taskkill /PID <PID> /F
+```
+
+**Option 3: Kill Process (macOS/Linux)**
+```bash
+lsof -i :5000
+kill -9 <PID>
+```
+
+---
+
+### Module Not Found Error
+
+**Problem:** `Cannot find module '@angular/core'`
+
+**Solutions:**
+
+**Step 1: Clear Cache**
+```bash
+rm -rf node_modules package-lock.json
+```
+
+**Step 2: Reinstall**
+```bash
+npm install
+```
+
+**Step 3: Clear Angular Cache**
+```bash
+ng cache clean
+```
+
+---
+
+### Build Fails
+
+**Problem:** `Build failed with compilation errors`
+
+**Solutions:**
+
+**Check TypeScript Errors:**
+```bash
+ng lint
+```
+
+**Clear Build Cache:**
+```bash
+ng cache clean
+rm -rf dist/
+npm run build
+```
+
+**Update Dependencies:**
+```bash
+npm update
+```
+
+---
+
+### CORS Error
+
+**Problem:** `Access to XMLHttpRequest blocked by CORS policy`
+
+**Root Cause:** Backend not configured to allow frontend origin
+
+**Solution:**
+
+Update backend CORS configuration in `Program.cs`:
+
+```csharp
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5000", "https://naar-noor.vercel.app")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
+app.UseCors("AllowFrontend");
+```
+
+---
+
+### API Calls Failing
+
+**Problem:** API requests return 404 or fail
+
+**Diagnostic Steps:**
+
+**1. Verify Backend is Running:**
+```bash
+curl http://localhost:8080/health
+```
+
+**2. Check API URL in Service:**
+```typescript
+// src/app/services/api.service.ts
+private apiUrl = environment.apiUrl; // Should be 'http://localhost:8080/api'
+```
+
+**3. Check Environment Configuration:**
+```typescript
+// src/environments/environment.ts
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8080/api'
+};
+```
+
+**4. Inspect Network Tab:**
+- Open browser DevTools (F12)
+- Go to Network tab
+- Check request URL and response
+
+---
+
+### Styling Not Applied
+
+**Problem:** Tailwind CSS classes not working
+
+**Solutions:**
+
+**1. Verify Tailwind Configuration:**
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: [
+    "./src/**/*.{html,ts}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+**2. Check styles.css:**
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+**3. Rebuild:**
+```bash
+npm run build
+```
+
+---
+
+## 🔧 Backend Issues
+
+### Port Already in Use
+
+**Problem:** `Address already in use: 8080`
+
+**Solutions:**
+
+**Option 1: Use Different Port**
+```bash
+dotnet run --project src/NaarNoor.API/NaarNoor.API.csproj --urls "http://localhost:5001"
+```
+
+**Option 2: Kill Process (Windows)**
+```cmd
+netstat -ano | findstr :8080
+taskkill /PID <PID> /F
+```
+
+**Option 3: Kill Process (macOS/Linux)**
+```bash
+lsof -i :8080
+kill -9 <PID>
+```
+
+---
+
+### Database Connection Failed
+
+**Problem:** `Cannot open database "db54355" requested by the login`
+
+**Diagnostic Steps:**
+
+**1. Verify Connection String:**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=db54355.public.databaseasp.net; Database=db54355; User Id=db54355; Password=eW!62%tA=bT7; Encrypt=True; TrustServerCertificate=True;"
+  }
+}
+```
+
+**2. Test Connection:**
+```bash
+sqlcmd -S db54355.public.databaseasp.net -U db54355 -P "eW!62%tA=bT7" -d db54355
+```
+
+**3. Check Firewall:**
+- Ensure port 1433 is open
+- Verify IP is whitelisted on remote server
+
+**4. Verify SQL Server is Running:**
+```bash
+# Windows
+sc query MSSQLSERVER
+
+# Linux
+sudo systemctl status mssql-server
+```
+
+---
+
+### Migration Errors
+
+**Problem:** `Unable to create a 'DbContext' of type 'ApplicationDbContext'`
+
+**Solutions:**
+
+**1. Verify Connection String Exists:**
+```bash
+dotnet user-secrets list --project src/NaarNoor.API
+```
+
+**2. Remove Problematic Migration:**
+```bash
+dotnet ef migrations remove --project src/NaarNoor.Infrastructure
+```
+
+**3. Drop and Recreate Database:**
+```bash
+dotnet ef database drop --project src/NaarNoor.Infrastructure --force
+dotnet ef database update --project src/NaarNoor.Infrastructure
+```
+
+**4. Generate New Migration:**
+```bash
+dotnet ef migrations add InitialCreate --project src/NaarNoor.Infrastructure
+dotnet ef database update --project src/NaarNoor.Infrastructure
+```
+
+---
+
+### Build Fails
+
+**Problem:** `Build failed with compilation errors`
+
+**Solutions:**
+
+**1. Clean Solution:**
+```bash
+dotnet clean
+```
+
+**2. Restore Packages:**
+```bash
+dotnet restore
+```
+
+**3. Rebuild:**
+```bash
+dotnet build
+```
+
+**4. Check for Missing Dependencies:**
+```bash
+dotnet list package
+```
+
+---
+
+### Swagger Not Loading
+
+**Problem:** Swagger UI returns 404
+
+**Solutions:**
+
+**1. Verify Swagger Configuration in Program.cs:**
+```csharp
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+```
+
+**2. Access Correct URL:**
+```
+http://localhost:8080/swagger
+```
+
+**3. Check Environment:**
+```bash
+echo $ASPNETCORE_ENVIRONMENT  # Should be "Development"
+```
+
+---
+
+### Validation Errors
+
+**Problem:** `One or more validation errors occurred`
+
+**Diagnostic Steps:**
+
+**1. Check Request Body:**
+```json
+{
+  "guestName": "John Doe",
+  "email": "john@example.com",
+  "phoneNumber": "+1-555-0123",
+  "reservationDate": "2026-06-15T19:00:00Z",
+  "numberOfGuests": 4
+}
+```
+
+**2. Review Validation Rules:**
+```csharp
+RuleFor(x => x.Email)
+    .NotEmpty().WithMessage("Email is required")
+    .EmailAddress().WithMessage("Email must be valid");
+```
+
+**3. Check Error Response:**
+```json
+{
+  "errors": {
+    "Email": ["Email is required"]
+  }
+}
+```
+
+---
+
+## 🗄️ Database Issues
+
+### Cannot Connect to Database
+
+**Problem:** `Cannot open server 'localhost' requested by the login`
+
+**Solutions:**
+
+**1. Verify SQL Server is Running:**
+```bash
+# Windows
+sc query MSSQLSERVER
+
+# Linux
+sudo systemctl status mssql-server
+```
+
+**2. Check Connection String:**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=NaarNoor;Trusted_Connection=true;"
+  }
+}
+```
+
+**3. Verify Firewall:**
+```bash
+# Windows
+netsh advfirewall firewall add rule name="SQL Server" dir=in action=allow protocol=TCP localport=1433
+
+# Linux
+sudo ufw allow 1433/tcp
+```
+
+**4. Check SQL Server Authentication:**
+- Enable SQL Server and Windows Authentication mode
+- Restart SQL Server service
+
+---
+
+### Database Locked
+
+**Problem:** `Database is locked`
+
+**Solutions:**
+
+**1. Check Active Connections:**
+```sql
+SELECT 
+    session_id,
+    login_name,
+    status,
+    blocking_session_id
+FROM sys.dm_exec_sessions
+WHERE database_id = DB_ID('db54355');
+```
+
+**2. Kill Blocking Sessions:**
+```sql
+KILL <session_id>;
+```
+
+**3. Set Database to Single User Mode:**
+```sql
+ALTER DATABASE db54355 SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+-- Perform operations
+ALTER DATABASE db54355 SET MULTI_USER;
+```
+
+---
+
+### Slow Queries
+
+**Problem:** API responses are slow
+
+**Diagnostic Steps:**
+
+**1. Enable Query Logging:**
+```csharp
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(connectionString)
+           .EnableSensitiveDataLogging()
+           .LogTo(Console.WriteLine, LogLevel.Information);
+});
+```
+
+**2. Find Slow Queries:**
+```sql
+SELECT TOP 10
+    qs.execution_count,
+    qs.total_elapsed_time / qs.execution_count AS avg_elapsed_time,
+    SUBSTRING(qt.text, (qs.statement_start_offset/2)+1,
+        ((CASE qs.statement_end_offset
+            WHEN -1 THEN DATALENGTH(qt.text)
+            ELSE qs.statement_end_offset
+        END - qs.statement_start_offset)/2) + 1) AS query_text
+FROM sys.dm_exec_query_stats qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) qt
+ORDER BY avg_elapsed_time DESC;
+```
+
+**3. Add Indexes:**
+```sql
+CREATE INDEX IX_Reservations_ReservationDate ON Reservations(ReservationDate);
+CREATE INDEX IX_MenuItems_Category ON MenuItems(Category);
+```
+
+**4. Use AsNoTracking:**
+```csharp
+var chefs = await _context.Chefs
+    .AsNoTracking()
+    .ToListAsync();
+```
+
+---
+
+## 🚀 Deployment Issues
+
+### Vercel Build Fails
+
+**Problem:** `Error: Command "ng build" exited with 127`
+
+**Solutions:**
+
+**1. Update package.json:**
+```json
+{
+  "scripts": {
+    "build": "npx ng build --configuration production"
+  }
+}
+```
+
+**2. Update vercel.json:**
+```json
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci"
+}
+```
+
+**3. Clear Vercel Cache:**
+```bash
+vercel --force
+```
+
+---
+
+### Application Won't Start
+
+**Problem:** Application crashes on startup
+
+**Diagnostic Steps:**
+
+**1. Check Logs:**
+```bash
+# Docker
+docker logs <container_id>
+
+# Systemd
+sudo journalctl -u naar-noor-api -n 100
+```
+
+**2. Verify Environment Variables:**
+```bash
+printenv | grep ConnectionStrings
+```
+
+**3. Check Connection String:**
+```bash
+dotnet run --project src/NaarNoor.API/NaarNoor.API.csproj
+```
+
+**4. Test Database Connection:**
+```bash
+sqlcmd -S server -U user -P password -d database
+```
+
+---
+
+### SSL Certificate Issues
+
+**Problem:** `SSL certificate problem: unable to get local issuer certificate`
+
+**Solutions:**
+
+**1. Verify Certificate:**
+```bash
+openssl s_client -connect naar-noor.com:443
+```
+
+**2. Check Certificate Expiration:**
+```bash
+echo | openssl s_client -servername naar-noor.com -connect naar-noor.com:443 2>/dev/null | openssl x509 -noout -dates
+```
+
+**3. Renew Let's Encrypt Certificate:**
+```bash
+sudo certbot renew
+```
+
+**4. Update Certificate in Application:**
+```csharp
+options.ListenAnyIP(8443, listenOptions =>
+{
+    listenOptions.UseHttps("/etc/letsencrypt/live/naar-noor.com/fullchain.pem",
+                            "/etc/letsencrypt/live/naar-noor.com/privkey.pem");
+});
+```
+
+---
+
+## 🐛 Git Issues
+
+### Merge Conflicts
+
+**Problem:** `CONFLICT (content): Merge conflict in file.cs`
+
+**Solutions:**
+
+**1. View Conflicts:**
+```bash
+git status
+```
+
+**2. Open Conflicted File:**
+```
+<<<<<<< HEAD
+Your changes
+=======
+Their changes
+>>>>>>> branch-name
+```
+
+**3. Resolve Manually:**
+- Keep your changes, their changes, or both
+- Remove conflict markers
+
+**4. Stage and Commit:**
+```bash
+git add <file>
+git commit -m "Resolve merge conflicts"
+```
+
+---
+
+### Detached HEAD
+
+**Problem:** `HEAD detached at <commit>`
+
+**Solutions:**
+
+**Option 1: Return to Branch**
+```bash
+git checkout main
+```
+
+**Option 2: Create New Branch**
+```bash
+git checkout -b new-branch-name
+```
+
+---
+
+### Large File Error
+
+**Problem:** `File too large to push`
+
+**Solutions:**
+
+**Option 1: Use Git LFS**
+```bash
+git lfs install
+git lfs track "*.psd"
+git add .gitattributes
+git commit -m "Add Git LFS"
+```
+
+**Option 2: Remove from History**
+```bash
+git filter-branch --tree-filter 'rm -f large-file.zip' HEAD
+```
+
+---
+
+## 📊 Performance Issues
+
+### High Memory Usage
+
+**Problem:** Application consuming excessive memory
+
+**Solutions:**
+
+**1. Check for Memory Leaks:**
+```csharp
+// Dispose of resources
+public void Dispose()
+{
+    _context?.Dispose();
+}
+```
+
+**2. Use AsNoTracking:**
+```csharp
+var items = await _context.MenuItems
+    .AsNoTracking()
+    .ToListAsync();
+```
+
+**3. Implement Pagination:**
+```csharp
+var items = await _context.MenuItems
+    .Skip((page - 1) * pageSize)
+    .Take(pageSize)
+    .ToListAsync();
+```
+
+**4. Monitor Memory:**
+```bash
+# Windows
+tasklist /FI "IMAGENAME eq dotnet.exe"
+
+# Linux
+ps aux | grep dotnet
+```
+
+---
+
+### Slow Frontend
+
+**Problem:** Frontend is slow or unresponsive
+
+**Solutions:**
+
+**1. Analyze Bundle Size:**
+```bash
+ng build --stats-json
+npx webpack-bundle-analyzer dist/lost-yeti/browser/stats.json
+```
+
+**2. Implement Lazy Loading:**
+```typescript
+{
+  path: 'menu',
+  loadComponent: () => import('./pages/menu/menu.component').then(m => m.MenuComponent)
+}
+```
+
+**3. Optimize Images:**
+- Use WebP format
+- Implement lazy loading
+- Compress images
+
+**4. Use OnPush Change Detection:**
+```typescript
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+```
+
+---
+
+## 📞 Getting Help
+
+### Before Asking for Help
+
+1. ✅ Check this troubleshooting guide
+2. ✅ Review relevant documentation
+3. ✅ Search existing GitHub issues
+4. ✅ Try basic debugging steps
+
+### When Reporting Issues
+
+Include the following information:
+
+**Environment:**
+- Operating System
+- Node.js version (`node --version`)
+- .NET version (`dotnet --version`)
+- Browser (for frontend issues)
+
+**Error Details:**
+- Full error message
+- Stack trace
+- Steps to reproduce
+
+**Context:**
+- What were you trying to do?
+- What did you expect to happen?
+- What actually happened?
+
+**Logs:**
+- Console output
+- Browser console (F12)
+- Application logs
+
+---
+
+## 🔗 Related Documentation
+
+- [Getting Started](./GETTING_STARTED.md) - Setup guide
+- [Frontend Guide](./FRONTEND.md) - Angular development
+- [Backend Guide](./BACKEND.md) - .NET API development
+- [Database Schema](./DATABASE.md) - Database structure
+- [Deployment Guide](./DEPLOYMENT.md) - Production deployment
+
+---
+
+**Still Need Help?** Open an issue on [GitHub](https://github.com/Mostafa-SAID7/Naar-Noor/issues) with detailed information.

@@ -1,1 +1,491 @@
-# 🎨 Frontend Development Guide\n\nThis guide covers frontend development for the Naar & Noor Angular application.\n\n## Project Setup\n\n### Installation\n\n```bash\ncd naar-noor\nnpm install\n```\n\n### Development Server\n\n```bash\nnpm run dev\n```\n\nNavigate to `http://localhost:4200/`. The application will automatically reload if you change any source files.\n\n### Production Build\n\n```bash\nnpm run build\n```\n\nThe build artifacts will be stored in the `dist/` directory.\n\n## Project Structure\n\n```\nsrc/\n├── app/\n│   ├── components/          # Reusable components\n│   ├── pages/               # Page-level components\n│   ├── sections/            # Feature sections\n│   ├── services/            # API and business logic\n│   ├── app.component.ts     # Root component\n│   ├── app.config.ts        # App configuration\n│   └── app.routes.ts        # Route definitions\n├── assets/                  # Images, icons, etc.\n├── data/                    # Mock data and constants\n├── styles.css               # Global styles\n└── main.ts                  # Application entry point\n```\n\n## Components\n\n### Component Structure\n\nEach component follows this structure:\n\n```\ncomponent-name/\n├── component-name.component.ts      # Component logic\n├── component-name.component.html    # Template\n└── component-name.component.css     # Styles\n```\n\n### Creating a New Component\n\n```bash\nng generate component components/my-component\n```\n\n### Component Example\n\n```typescript\nimport { Component, OnInit } from '@angular/core';\n\n@Component({\n  selector: 'app-my-component',\n  standalone: true,\n  templateUrl: './my-component.component.html',\n  styleUrls: ['./my-component.component.css']\n})\nexport class MyComponent implements OnInit {\n  title = 'My Component';\n\n  constructor() {}\n\n  ngOnInit(): void {\n    // Component initialization\n  }\n}\n```\n\n## Services\n\n### API Service\n\nThe `api.service.ts` handles all HTTP communication with the backend.\n\n```typescript\nimport { Injectable } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\nimport { Observable } from 'rxjs';\n\n@Injectable({\n  providedIn: 'root'\n})\nexport class ApiService {\n  private apiUrl = 'http://localhost:5000/api';\n\n  constructor(private http: HttpClient) {}\n\n  getChefs(): Observable<any> {\n    return this.http.get(`${this.apiUrl}/chefs`);\n  }\n\n  getMenuItems(): Observable<any> {\n    return this.http.get(`${this.apiUrl}/menu`);\n  }\n\n  createReservation(data: any): Observable<any> {\n    return this.http.post(`${this.apiUrl}/reservations`, data);\n  }\n}\n```\n\n### Creating a Service\n\n```bash\nng generate service services/my-service\n```\n\n## Styling with Tailwind CSS\n\n### Configuration\n\nTailwind CSS is configured in `tailwind.config.js`.\n\n### Usage\n\n```html\n<div class=\"flex items-center justify-center min-h-screen bg-gray-100\">\n  <button class=\"px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600\">\n    Click Me\n  </button>\n</div>\n```\n\n### Custom Styles\n\nAdd custom styles in `styles.css`:\n\n```css\n@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n@layer components {\n  .btn-primary {\n    @apply px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600;\n  }\n}\n```\n\n## Routing\n\nRoutes are defined in `app.routes.ts`:\n\n```typescript\nimport { Routes } from '@angular/router';\nimport { HomeComponent } from './pages/home/home.component';\n\nexport const routes: Routes = [\n  {\n    path: '',\n    component: HomeComponent\n  },\n  {\n    path: 'menu',\n    component: MenuComponent\n  }\n];\n```\n\n## Data Management\n\n### Mock Data\n\nMock data is stored in the `data/` directory:\n\n```typescript\n// data/menu.data.ts\nexport const MENU_ITEMS = [\n  {\n    id: 1,\n    name: 'Tandoori Chicken',\n    description: 'Grilled chicken with spices',\n    price: 12.99,\n    category: 'Mains'\n  }\n];\n```\n\n### Using Mock Data\n\n```typescript\nimport { MENU_ITEMS } from '../data/menu.data';\n\nexport class MenuComponent {\n  items = MENU_ITEMS;\n}\n```\n\n## Forms\n\n### Reactive Forms\n\n```typescript\nimport { FormBuilder, FormGroup, Validators } from '@angular/forms';\n\nexport class ReservationComponent {\n  form: FormGroup;\n\n  constructor(private fb: FormBuilder) {\n    this.form = this.fb.group({\n      name: ['', Validators.required],\n      email: ['', [Validators.required, Validators.email]],\n      date: ['', Validators.required],\n      guests: ['', Validators.required]\n    });\n  }\n\n  submit() {\n    if (this.form.valid) {\n      console.log(this.form.value);\n    }\n  }\n}\n```\n\n### Template\n\n```html\n<form [formGroup]=\"form\" (ngSubmit)=\"submit()\">\n  <input formControlName=\"name\" placeholder=\"Name\" />\n  <input formControlName=\"email\" type=\"email\" placeholder=\"Email\" />\n  <button type=\"submit\" [disabled]=\"!form.valid\">Submit</button>\n</form>\n```\n\n## HTTP Interceptors\n\nCreate an interceptor for common HTTP operations:\n\n```typescript\nimport { Injectable } from '@angular/core';\nimport { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';\nimport { Observable } from 'rxjs';\n\n@Injectable()\nexport class AuthInterceptor implements HttpInterceptor {\n  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {\n    const token = localStorage.getItem('token');\n    if (token) {\n      req = req.clone({\n        setHeaders: {\n          Authorization: `Bearer ${token}`\n        }\n      });\n    }\n    return next.handle(req);\n  }\n}\n```\n\n## Best Practices\n\n1. **Component Reusability**: Create small, focused components\n2. **Service Injection**: Use dependency injection for services\n3. **Reactive Programming**: Use RxJS observables for async operations\n4. **Type Safety**: Always use TypeScript types\n5. **Error Handling**: Implement proper error handling in services\n6. **Performance**: Use OnPush change detection strategy when possible\n7. **Accessibility**: Use semantic HTML and ARIA attributes\n\n## Testing\n\n### Unit Tests\n\n```bash\nng test\n```\n\n### Example Test\n\n```typescript\nimport { ComponentFixture, TestBed } from '@angular/core/testing';\nimport { MyComponent } from './my-component.component';\n\ndescribe('MyComponent', () => {\n  let component: MyComponent;\n  let fixture: ComponentFixture<MyComponent>;\n\n  beforeEach(async () => {\n    await TestBed.configureTestingModule({\n      imports: [MyComponent]\n    }).compileComponents();\n\n    fixture = TestBed.createComponent(MyComponent);\n    component = fixture.componentInstance;\n    fixture.detectChanges();\n  });\n\n  it('should create', () => {\n    expect(component).toBeTruthy();\n  });\n});\n```\n\n## Debugging\n\n### Browser DevTools\n\n1. Open Chrome DevTools (F12)\n2. Go to Sources tab\n3. Set breakpoints in your code\n4. Use the Console for debugging\n\n### Angular DevTools\n\nInstall the [Angular DevTools](https://angular.io/guide/devtools) browser extension for enhanced debugging.\n\n## Performance Tips\n\n1. **Lazy Loading**: Load modules only when needed\n2. **Change Detection**: Use OnPush strategy\n3. **Unsubscribe**: Always unsubscribe from observables\n4. **TrackBy**: Use trackBy in *ngFor loops\n5. **Minification**: Build with production flag\n\n## Common Issues\n\n### Port Already in Use\n\n```bash\nnpm run dev -- --port 4300\n```\n\n### Module Not Found\n\nEnsure imports are correct and the module is exported.\n\n### CORS Issues\n\nCheck backend CORS configuration.\n\n---\n\nFor more information, visit the [Angular Documentation](https://angular.io/docs).\n
+# 🎨 Frontend Development Guide
+
+Complete guide to developing the **Naar & Noor** Angular frontend application.
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+cd naar-noor
+npm install
+```
+
+### Development Server
+
+```bash
+npm run dev
+```
+
+✅ **Application running at:** `http://localhost:5000`
+
+The app will automatically reload when you save changes to source files.
+
+### Production Build
+
+```bash
+npm run build
+```
+
+Build artifacts are stored in `dist/lost-yeti/browser/`
+
+---
+
+## 📁 Project Structure\n\n```
+naar-noor/
+├── src/
+│   ├── app/
+│   │   ├── components/          # Reusable UI components
+│   │   ├── pages/               # Full page components
+│   │   ├── sections/            # Feature sections
+│   │   ├── services/            # API and business logic
+│   │   ├── app.component.ts     # Root component
+│   │   ├── app.config.ts        # Application configuration
+│   │   └── app.routes.ts        # Route definitions
+│   ├── assets/                  # Static files (images, icons)
+│   ├── data/                    # Mock data and constants
+│   ├── environments/            # Environment configurations
+│   ├── styles.css               # Global styles
+│   └── main.ts                  # Application entry point
+├── angular.json                 # Angular CLI configuration
+├── package.json                 # Dependencies
+├── tailwind.config.js           # Tailwind CSS configuration
+└── tsconfig.json                # TypeScript configuration
+```
+
+---
+
+## 🧩 Components
+
+### Component Architecture
+
+Each component follows Angular's standalone component pattern:
+
+```
+component-name/
+├── component-name.component.ts      # Logic and state
+├── component-name.component.html    # Template
+└── component-name.component.css     # Scoped styles
+```
+
+### Creating Components
+
+```bash
+ng generate component components/my-component
+```
+
+### Component Example\n\n```typescript
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-my-component',
+  standalone: true,
+  templateUrl: './my-component.component.html',
+  styleUrls: ['./my-component.component.css']
+})
+export class MyComponent implements OnInit {
+  title = 'My Component';
+
+  constructor() {}
+
+  ngOnInit(): void {
+    // Component initialization logic
+  }
+}
+```
+
+---
+
+## 🔌 Services
+
+### API Service
+
+The `api.service.ts` centralizes all HTTP communication with the backend API.\n\n```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private apiUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) {}
+
+  // Chefs
+  getChefs(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/chefs`);
+  }
+
+  // Menu Items
+  getMenuItems(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/menu`);
+  }
+
+  // Reservations
+  createReservation(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reservations`, data);
+  }
+
+  getReservations(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/reservations`);
+  }
+
+  // Reviews
+  getReviews(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/reviews`);
+  }
+
+  // Contact
+  submitContact(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/contact`, data);
+  }
+}
+```
+
+### Creating Services
+
+```bash
+ng generate service services/my-service
+```
+
+---
+
+## 🎨 Styling with Tailwind CSS
+
+### Configuration
+
+Tailwind CSS is configured in `tailwind.config.js`:
+
+```javascript
+module.exports = {
+  content: [
+    "./src/**/*.{html,ts}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+### Usage in Templates\n\n```html
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+  <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+    Click Me
+  </button>
+</div>
+```
+
+### Custom Component Classes
+
+Define reusable classes in `styles.css`:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6;
+  }
+}
+```
+
+---
+
+## 🛣️ Routing
+
+Routes are defined in `app.routes.ts`:\n\n```typescript
+import { Routes } from '@angular/router';
+import { HomeComponent } from './pages/home/home.component';
+
+export const routes: Routes = [
+  {
+    path: '',
+    component: HomeComponent,
+    title: 'Home - Naar & Noor'
+  },
+  {
+    path: 'menu',
+    loadComponent: () => import('./pages/menu/menu.component').then(m => m.MenuComponent),
+    title: 'Menu - Naar & Noor'
+  },
+  {
+    path: '**',
+    redirectTo: ''
+  }
+];
+```
+
+---
+
+## 📊 Data Management
+
+### Static Data
+
+Static data is stored in the `data/` directory:\n\n```typescript
+// data/menu.data.ts
+export const MENU_ITEMS = [
+  {
+    id: 1,
+    name: 'Tandoori Chicken',
+    description: 'Grilled chicken marinated in yogurt and spices',
+    price: 14.99,
+    category: 'Mains',
+    imageUrl: '/assets/menu/tandoori-chicken.jpg'
+  },
+  {
+    id: 2,
+    name: 'Butter Chicken',
+    description: 'Tender chicken in creamy tomato sauce',
+    price: 13.99,
+    category: 'Mains',
+    imageUrl: '/assets/menu/butter-chicken.jpg'
+  }
+];
+```
+
+### Using Static Data
+
+```typescript
+import { Component } from '@angular/core';
+import { MENU_ITEMS } from '../../data/menu.data';
+
+export class MenuComponent {
+  items = MENU_ITEMS;
+}
+```
+
+---
+
+## 📝 Forms
+
+### Reactive Forms\n\n```typescript
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
+
+export class ReservationComponent {
+  form: FormGroup;
+  isSubmitting = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private apiService: ApiService
+  ) {
+    this.form = this.fb.group({
+      guestName: ['', [Validators.required, Validators.maxLength(100)]],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: ['', Validators.required],
+      reservationDate: ['', Validators.required],
+      numberOfGuests: ['', [Validators.required, Validators.min(1), Validators.max(20)]],
+      specialRequests: ['']
+    });
+  }
+
+  submit() {
+    if (this.form.valid && !this.isSubmitting) {
+      this.isSubmitting = true;
+      this.apiService.createReservation(this.form.value).subscribe({
+        next: (response) => {
+          console.log('Reservation created:', response);
+          this.form.reset();
+          this.isSubmitting = false;
+        },
+        error: (error) => {
+          console.error('Error creating reservation:', error);
+          this.isSubmitting = false;
+        }
+      });
+    }
+  }
+}
+```
+
+### Form Template
+
+```html
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div>
+    <label class="block text-sm font-medium mb-1">Name</label>
+    <input 
+      formControlName="guestName" 
+      type="text"
+      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+      placeholder="Your name"
+    />
+  </div>
+  
+  <div>
+    <label class="block text-sm font-medium mb-1">Email</label>
+    <input 
+      formControlName="email" 
+      type="email"
+      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+      placeholder="your@email.com"
+    />
+  </div>
+  
+  <button 
+    type="submit" 
+    [disabled]="!form.valid || isSubmitting"
+    class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+  >
+    {{ isSubmitting ? 'Submitting...' : 'Submit Reservation' }}
+  </button>
+</form>
+```
+
+---
+
+## 🔐 HTTP Interceptors
+
+Create interceptors for common HTTP operations:\n\n```typescript
+import { Injectable } from '@angular/core';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+@Injectable()
+export class ErrorInterceptor implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    return next.handle(req).pipe(
+      catchError((error: HttpErrorResponse) => {
+        let errorMessage = 'An error occurred';
+        
+        if (error.error instanceof ErrorEvent) {
+          // Client-side error
+          errorMessage = `Error: ${error.error.message}`;
+        } else {
+          // Server-side error
+          errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+        }
+        
+        console.error(errorMessage);
+        return throwError(() => error);
+      })
+    );
+  }
+}
+```
+
+---
+
+## ✅ Best Practices
+
+| Practice | Description |
+|----------|-------------|
+| **Component Reusability** | Create small, focused, reusable components |
+| **Service Injection** | Use dependency injection for all services |
+| **Reactive Programming** | Leverage RxJS observables for async operations |
+| **Type Safety** | Always define TypeScript interfaces and types |
+| **Error Handling** | Implement comprehensive error handling |
+| **Performance** | Use OnPush change detection when possible |
+| **Accessibility** | Use semantic HTML and ARIA attributes |
+| **Code Organization** | Follow Angular style guide conventions |
+
+---
+
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+ng test
+```
+
+### Unit Test Example\n\n```typescript
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MyComponent } from './my-component.component';
+
+describe('MyComponent', () => {
+  let component: MyComponent;
+  let fixture: ComponentFixture<MyComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MyComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MyComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should have correct title', () => {
+    expect(component.title).toBe('My Component');
+  });
+});
+```
+
+---
+
+## 🐛 Debugging
+
+### Browser DevTools
+
+1. Press **F12** to open Chrome DevTools
+2. Navigate to **Sources** tab
+3. Set breakpoints by clicking line numbers
+4. Use **Console** for logging and debugging
+
+### Angular DevTools
+
+Install [Angular DevTools](https://angular.io/guide/devtools) browser extension for:
+- Component tree inspection
+- Change detection profiling
+- Dependency injection debugging
+
+---
+
+## ⚡ Performance Optimization
+
+| Technique | Description |
+|-----------|-------------|
+| **Lazy Loading** | Load feature modules only when needed |
+| **OnPush Change Detection** | Reduce change detection cycles |
+| **Unsubscribe Observables** | Prevent memory leaks |
+| **TrackBy Functions** | Optimize *ngFor rendering |
+| **Production Build** | Enable minification and tree-shaking |
+| **Image Optimization** | Use WebP format and lazy loading |
+
+### Example: TrackBy Function
+
+```typescript
+trackByItem(index: number, item: any): number {
+  return item.id;
+}
+```
+
+```html
+<div *ngFor="let item of items; trackBy: trackByItem">
+  {{ item.name }}
+</div>
+```
+
+---
+
+## 🔗 Useful Resources
+
+- [Angular Documentation](https://angular.io/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [RxJS Documentation](https://rxjs.dev/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+
+---
+
+**Need Help?** Check the [Troubleshooting Guide](./TROUBLESHOOTING.md) or [API Documentation](./API.md).

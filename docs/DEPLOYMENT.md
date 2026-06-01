@@ -1,1 +1,633 @@
-# 🚀 Deployment Guide\n\nDeployment and production setup guide for Naar & Noor.\n\n## Pre-Deployment Checklist\n\n- [ ] All tests passing\n- [ ] Code reviewed and approved\n- [ ] Environment variables configured\n- [ ] Database backups created\n- [ ] SSL certificates ready\n- [ ] CDN configured (if applicable)\n- [ ] Monitoring and logging set up\n- [ ] Disaster recovery plan in place\n\n## Frontend Deployment\n\n### Build for Production\n\n```bash\ncd naar-noor\nnpm run build\n```\n\nThis creates optimized production build in `dist/` directory.\n\n### Deployment Options\n\n#### Option 1: Vercel\n\n1. Connect GitHub repository to Vercel\n2. Configure build settings:\n   - Build Command: `npm run build`\n   - Output Directory: `dist/lost-yeti/browser`\n3. Deploy\n\n#### Option 2: Netlify\n\n1. Connect GitHub repository to Netlify\n2. Configure build settings:\n   - Build Command: `npm run build`\n   - Publish Directory: `dist/lost-yeti/browser`\n3. Deploy\n\n#### Option 3: Docker\n\n**Dockerfile:**\n\n```dockerfile\nFROM node:18-alpine AS builder\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nRUN npm run build\n\nFROM nginx:alpine\nCOPY --from=builder /app/dist/lost-yeti/browser /usr/share/nginx/html\nCOPY nginx.conf /etc/nginx/nginx.conf\nEXPOSE 80\nCMD [\"nginx\", \"-g\", \"daemon off;\"]\n```\n\n**nginx.conf:**\n\n```nginx\nuser nginx;\nworker_processes auto;\nerror_log /var/log/nginx/error.log warn;\npid /var/run/nginx.pid;\n\nevents {\n    worker_connections 1024;\n}\n\nhttp {\n    include /etc/nginx/mime.types;\n    default_type application/octet-stream;\n\n    sendfile on;\n    keepalive_timeout 65;\n    gzip on;\n\n    server {\n        listen 80;\n        server_name _;\n\n        root /usr/share/nginx/html;\n        index index.html;\n\n        location / {\n            try_files $uri $uri/ /index.html;\n        }\n\n        location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {\n            expires 1y;\n            add_header Cache-Control \"public, immutable\";\n        }\n    }\n}\n```\n\n**Build and Run:**\n\n```bash\ndocker build -t naar-noor-frontend .\ndocker run -p 80:80 naar-noor-frontend\n```\n\n#### Option 4: AWS S3 + CloudFront\n\n1. Create S3 bucket\n2. Upload build files\n3. Configure CloudFront distribution\n4. Set up Route 53 DNS\n\n### Environment Configuration\n\nCreate `.env.production` file:\n\n```env\nNG_APP_API_URL=https://api.example.com\nNG_APP_ENVIRONMENT=production\n```\n\n## Backend Deployment\n\n### Build for Production\n\n```bash\ncd api-server\ndotnet publish -c Release -o ./publish\n```\n\n### Deployment Options\n\n#### Option 1: Azure App Service\n\n1. Create App Service in Azure Portal\n2. Configure connection strings\n3. Deploy using Azure CLI:\n\n```bash\naz webapp deployment source config-zip --resource-group myResourceGroup --name myAppService --src publish.zip\n```\n\n#### Option 2: Docker\n\n**Dockerfile:**\n\n```dockerfile\nFROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder\nWORKDIR /src\nCOPY . .\nRUN dotnet restore\nRUN dotnet publish -c Release -o /app/publish\n\nFROM mcr.microsoft.com/dotnet/aspnet:8.0\nWORKDIR /app\nCOPY --from=builder /app/publish .\nEXPOSE 5000\nENTRYPOINT [\"dotnet\", \"NaarNoor.API.dll\"]\n```\n\n**Build and Run:**\n\n```bash\ndocker build -t naar-noor-api .\ndocker run -p 5000:5000 -e ConnectionStrings__DefaultConnection=\"your-connection-string\" naar-noor-api\n```\n\n#### Option 3: AWS EC2\n\n1. Launch EC2 instance (Windows Server or Linux)\n2. Install .NET 8 runtime\n3. Deploy application files\n4. Configure IIS (Windows) or Nginx (Linux)\n5. Set up SSL certificate\n\n#### Option 4: Docker Compose\n\n**docker-compose.yml:**\n\n```yaml\nversion: '3.8'\n\nservices:\n  api:\n    build: ./api-server\n    ports:\n      - \"5000:5000\"\n    environment:\n      - ConnectionStrings__DefaultConnection=Server=db;Database=NaarNoor;User Id=sa;Password=YourPassword123!;\n    depends_on:\n      - db\n\n  db:\n    image: mcr.microsoft.com/mssql/server:2022-latest\n    environment:\n      - ACCEPT_EULA=Y\n      - SA_PASSWORD=YourPassword123!\n    ports:\n      - \"1433:1433\"\n    volumes:\n      - sqldata:/var/opt/mssql\n\n  frontend:\n    build: ./naar-noor\n    ports:\n      - \"80:80\"\n    depends_on:\n      - api\n\nvolumes:\n  sqldata:\n```\n\n**Deploy:**\n\n```bash\ndocker-compose up -d\n```\n\n### Environment Configuration\n\n**appsettings.Production.json:**\n\n```json\n{\n  \"ConnectionStrings\": {\n    \"DefaultConnection\": \"Server=your-server;Database=NaarNoor;User Id=sa;Password=YourPassword;\"\n  },\n  \"Logging\": {\n    \"LogLevel\": {\n      \"Default\": \"Warning\"\n    }\n  },\n  \"AllowedHosts\": \"*.example.com\",\n  \"Cors\": {\n    \"AllowedOrigins\": [\"https://example.com\"]\n  }\n}\n```\n\n## Database Deployment\n\n### SQL Server Setup\n\n1. Create database\n2. Apply migrations\n3. Seed initial data\n\n```bash\ndotnet ef database update --project src/NaarNoor.Infrastructure\n```\n\n### Backup Strategy\n\n- Daily full backups\n- Hourly transaction log backups\n- Store backups in separate location\n- Test restore procedures regularly\n\n## SSL/TLS Configuration\n\n### Let's Encrypt (Free)\n\n```bash\n# Using Certbot\ncertbot certonly --standalone -d example.com\n```\n\n### Configure in ASP.NET Core\n\n```csharp\nvar builder = WebApplicationBuilder.CreateBuilder(args);\n\nbuilder.WebHost.UseKestrel(options =>\n{\n    options.ListenAnyIP(5000);\n    options.ListenAnyIP(5001, listenOptions =>\n    {\n        listenOptions.UseHttps(\"/path/to/certificate.pfx\", \"password\");\n    });\n});\n```\n\n## Monitoring and Logging\n\n### Application Insights (Azure)\n\n```csharp\nbuilder.Services.AddApplicationInsightsTelemetry();\n```\n\n### Serilog\n\n```csharp\nLog.Logger = new LoggerConfiguration()\n    .MinimumLevel.Information()\n    .WriteTo.Console()\n    .WriteTo.File(\"logs/log-.txt\", rollingInterval: RollingInterval.Day)\n    .CreateLogger();\n```\n\n## Performance Optimization\n\n### Caching\n\n```csharp\nbuilder.Services.AddStackExchangeRedisCache(options =>\n{\n    options.Configuration = builder.Configuration.GetConnectionString(\"Redis\");\n});\n```\n\n### Compression\n\n```csharp\nbuilder.Services.AddResponseCompression(options =>\n{\n    options.EnableForHttps = true;\n});\n```\n\n## Security Hardening\n\n### HTTPS Redirect\n\n```csharp\napp.UseHttpsRedirection();\n```\n\n### CORS Configuration\n\n```csharp\nbuilder.Services.AddCors(options =>\n{\n    options.AddPolicy(\"Production\", policy =>\n    {\n        policy.WithOrigins(\"https://example.com\")\n              .AllowAnyMethod()\n              .AllowAnyHeader();\n    });\n});\n```\n\n### Security Headers\n\n```csharp\napp.Use(async (context, next) =>\n{\n    context.Response.Headers.Add(\"X-Content-Type-Options\", \"nosniff\");\n    context.Response.Headers.Add(\"X-Frame-Options\", \"DENY\");\n    context.Response.Headers.Add(\"X-XSS-Protection\", \"1; mode=block\");\n    await next();\n});\n```\n\n## Scaling\n\n### Horizontal Scaling\n\n- Deploy multiple instances behind load balancer\n- Use Azure App Service Scale Sets\n- Configure auto-scaling based on metrics\n\n### Vertical Scaling\n\n- Increase server resources (CPU, RAM)\n- Optimize database queries\n- Implement caching\n\n## Disaster Recovery\n\n### Backup Plan\n\n1. Daily full database backups\n2. Hourly transaction log backups\n3. Store in geographically separate location\n4. Test restore procedures monthly\n\n### Recovery Procedures\n\n1. Restore database from backup\n2. Redeploy application\n3. Verify data integrity\n4. Update DNS if needed\n\n## Rollback Procedure\n\n1. Keep previous version deployed\n2. Update load balancer to route to previous version\n3. Investigate issues\n4. Deploy fix and redeploy\n\n## Post-Deployment\n\n- [ ] Verify all endpoints working\n- [ ] Check database connectivity\n- [ ] Monitor error logs\n- [ ] Test critical user flows\n- [ ] Verify SSL certificate\n- [ ] Check performance metrics\n- [ ] Update documentation\n- [ ] Notify stakeholders\n\n## Troubleshooting\n\n### Application Won't Start\n\n1. Check logs\n2. Verify connection strings\n3. Ensure database is accessible\n4. Check environment variables\n\n### High Memory Usage\n\n1. Check for memory leaks\n2. Implement caching\n3. Optimize queries\n4. Increase server resources\n\n### Database Connection Issues\n\n1. Verify connection string\n2. Check firewall rules\n3. Verify database user permissions\n4. Test connectivity from server\n\n---\n\nFor more information, see the [ASP.NET Core Deployment Documentation](https://docs.microsoft.com/aspnet/core/host-and-deploy/).\n
+# 🚀 Deployment Guide
+
+Complete deployment guide for **Naar & Noor** frontend and backend applications.
+
+---
+
+## ✅ Pre-Deployment Checklist
+
+Before deploying to production, ensure:
+
+- [ ] All tests passing
+- [ ] Code reviewed and approved
+- [ ] Environment variables configured
+- [ ] Database migrations ready
+- [ ] SSL certificates obtained
+- [ ] Monitoring and logging configured
+- [ ] Backup strategy in place
+- [ ] Performance testing completed
+
+---
+
+## 🎨 Frontend Deployment
+
+### Build for Production
+
+```bash
+cd naar-noor
+npm run build
+```
+
+✅ **Output:** `dist/lost-yeti/browser/`
+
+---
+
+### Option 1: Vercel (Recommended)
+
+**Step 1: Install Vercel CLI**
+
+```bash
+npm install -g vercel
+```
+
+**Step 2: Deploy**
+
+```bash
+vercel
+```
+
+**Configuration (`vercel.json`):**
+
+```json
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/lost-yeti/browser",
+  "installCommand": "npm ci",
+  "env": {
+    "ANGULAR_CLI_ANALYTICS": "false"
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
+```
+
+**Environment Variables:**
+
+Set in Vercel dashboard:
+- `ANGULAR_CLI_ANALYTICS` = `false`
+
+---
+
+### Option 2: Netlify
+
+**Step 1: Create `netlify.toml`**
+
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist/lost-yeti/browser"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+**Step 2: Deploy**
+
+```bash
+npm install -g netlify-cli
+netlify deploy --prod
+```
+
+---
+
+### Option 3: Docker + Nginx
+
+**Dockerfile:**
+
+```dockerfile
+# Build stage
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+COPY --from=builder /app/dist/lost-yeti/browser /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+**nginx.conf:**
+
+```nginx
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    sendfile on;
+    keepalive_timeout 65;
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # Cache static assets
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        # Security headers
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+    }
+}
+```
+
+**Build and Run:**
+
+```bash
+docker build -t naar-noor-frontend .
+docker run -p 80:80 naar-noor-frontend
+```
+
+---
+
+### Option 4: AWS S3 + CloudFront
+
+**Step 1: Create S3 Bucket**
+
+```bash
+aws s3 mb s3://naar-noor-frontend
+```
+
+**Step 2: Upload Build**
+
+```bash
+aws s3 sync dist/lost-yeti/browser/ s3://naar-noor-frontend --delete
+```
+
+**Step 3: Configure CloudFront**
+
+1. Create CloudFront distribution
+2. Set origin to S3 bucket
+3. Configure custom error responses (404 → /index.html)
+4. Add SSL certificate
+5. Set up Route 53 DNS
+
+---
+
+## 🔧 Backend Deployment
+
+### Build for Production
+
+```bash
+cd api-server
+dotnet publish -c Release -o ./publish
+```
+
+✅ **Output:** `publish/`
+
+---
+
+### Option 1: Azure App Service
+
+**Step 1: Create App Service**
+
+```bash
+az webapp create \
+  --resource-group NaarNoorRG \
+  --plan NaarNoorPlan \
+  --name naar-noor-api \
+  --runtime "DOTNET|8.0"
+```
+
+**Step 2: Configure Connection String**
+
+```bash
+az webapp config connection-string set \
+  --resource-group NaarNoorRG \
+  --name naar-noor-api \
+  --connection-string-type SQLServer \
+  --settings DefaultConnection="Server=..."
+```
+
+**Step 3: Deploy**
+
+```bash
+az webapp deployment source config-zip \
+  --resource-group NaarNoorRG \
+  --name naar-noor-api \
+  --src publish.zip
+```
+
+---
+
+### Option 2: Docker
+
+**Dockerfile:**
+
+```dockerfile
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
+WORKDIR /src
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app/publish
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=builder /app/publish .
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENTRYPOINT ["dotnet", "NaarNoor.API.dll"]
+```
+
+**Build and Run:**
+
+```bash
+docker build -t naar-noor-api .
+docker run -p 8080:8080 \
+  -e ConnectionStrings__DefaultConnection="Server=..." \
+  naar-noor-api
+```
+
+---
+
+### Option 3: Docker Compose (Full Stack)
+
+**docker-compose.yml:**
+
+```yaml
+version: '3.8'
+
+services:
+  # Backend API
+  api:
+    build: ./api-server
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db;Database=NaarNoor;User Id=sa;Password=YourPassword123!;
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # SQL Server Database
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourPassword123!
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build: ./naar-noor
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  sqldata:
+```
+
+**Deploy:**
+
+```bash
+docker-compose up -d
+```
+
+---
+
+### Option 4: AWS EC2
+
+**Step 1: Launch EC2 Instance**
+
+- AMI: Ubuntu Server 22.04 LTS
+- Instance Type: t3.medium
+- Security Group: Allow ports 80, 443, 8080
+
+**Step 2: Install .NET Runtime**
+
+```bash
+wget https://dot.net/v1/dotnet-install.sh
+chmod +x dotnet-install.sh
+./dotnet-install.sh --channel 8.0 --runtime aspnetcore
+```
+
+**Step 3: Deploy Application**
+
+```bash
+scp -r publish/ ubuntu@ec2-instance:/var/www/naar-noor-api
+```
+
+**Step 4: Configure Systemd Service**
+
+```ini
+[Unit]
+Description=Naar Noor API
+
+[Service]
+WorkingDirectory=/var/www/naar-noor-api
+ExecStart=/usr/bin/dotnet /var/www/naar-noor-api/NaarNoor.API.dll
+Restart=always
+RestartSec=10
+SyslogIdentifier=naar-noor-api
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Step 5: Start Service**
+
+```bash
+sudo systemctl enable naar-noor-api
+sudo systemctl start naar-noor-api
+```
+
+---
+
+## 🗄️ Database Deployment
+
+### Apply Migrations
+
+```bash
+dotnet ef database update --project src/NaarNoor.Infrastructure
+```
+
+### Generate SQL Script
+
+```bash
+dotnet ef migrations script --project src/NaarNoor.Infrastructure --output migration.sql
+```
+
+### Backup Strategy
+
+**Daily Full Backup:**
+
+```sql
+BACKUP DATABASE db54355
+TO DISK = '/backups/NaarNoor_Full_$(DATE).bak'
+WITH COMPRESSION;
+```
+
+**Hourly Transaction Log Backup:**
+
+```sql
+BACKUP LOG db54355
+TO DISK = '/backups/NaarNoor_Log_$(DATETIME).trn'
+WITH COMPRESSION;
+```
+
+---
+
+## 🔒 SSL/TLS Configuration
+
+### Let's Encrypt (Free)
+
+```bash
+sudo apt install certbot
+sudo certbot certonly --standalone -d naar-noor.com -d www.naar-noor.com
+```
+
+### Configure in ASP.NET Core
+
+```csharp
+builder.WebHost.UseKestrel(options =>
+{
+    options.ListenAnyIP(8080);
+    options.ListenAnyIP(8443, listenOptions =>
+    {
+        listenOptions.UseHttps("/etc/letsencrypt/live/naar-noor.com/fullchain.pem",
+                                "/etc/letsencrypt/live/naar-noor.com/privkey.pem");
+    });
+});
+```
+
+---
+
+## 📊 Monitoring & Logging
+
+### Application Insights (Azure)
+
+```csharp
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+});
+```
+
+### Serilog
+
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.Seq("http://localhost:5341")
+    .CreateLogger();
+```
+
+### Health Checks
+
+```csharp
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>()
+    .AddSqlServer(connectionString);
+
+app.MapHealthChecks("/health");
+```
+
+---
+
+## ⚡ Performance Optimization
+
+### Response Compression
+
+```csharp
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<GzipCompressionProvider>();
+    options.Providers.Add<BrotliCompressionProvider>();
+});
+```
+
+### Response Caching
+
+```csharp
+builder.Services.AddResponseCaching();
+app.UseResponseCaching();
+```
+
+### Redis Caching
+
+```csharp
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+```
+
+---
+
+## 🔐 Security Hardening
+
+### HTTPS Redirect
+
+```csharp
+app.UseHttpsRedirection();
+```
+
+### CORS Configuration
+
+```csharp
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Production", policy =>
+    {
+        policy.WithOrigins("https://naar-noor.vercel.app")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
+app.UseCors("Production");
+```
+
+### Security Headers
+
+```csharp
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Add("Strict-Transport-Security", "max-age=31536000");
+    await next();
+});
+```
+
+---
+
+## 📈 Scaling
+
+### Horizontal Scaling
+
+- Deploy multiple instances behind load balancer
+- Use Azure App Service Scale Sets
+- Configure auto-scaling based on CPU/memory metrics
+
+### Vertical Scaling
+
+- Increase server resources (CPU, RAM)
+- Optimize database queries
+- Implement caching layer
+
+---
+
+## 🔄 CI/CD Pipeline
+
+### GitHub Actions
+
+**.github/workflows/deploy.yml:**
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: cd naar-noor && npm ci && npm run build
+      - uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+      - run: cd api-server && dotnet publish -c Release
+      - uses: azure/webapps-deploy@v2
+        with:
+          app-name: naar-noor-api
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: api-server/publish
+```
+
+---
+
+## 🔙 Rollback Procedure
+
+1. **Identify Issue:** Check logs and monitoring
+2. **Revert Deployment:** Deploy previous version
+3. **Database Rollback:** Restore from backup if needed
+4. **Verify:** Test critical functionality
+5. **Communicate:** Notify stakeholders
+
+---
+
+## 📋 Post-Deployment Checklist
+
+- [ ] Verify all endpoints responding
+- [ ] Check database connectivity
+- [ ] Monitor error logs
+- [ ] Test critical user flows
+- [ ] Verify SSL certificate
+- [ ] Check performance metrics
+- [ ] Update documentation
+- [ ] Notify stakeholders
+
+---
+
+## 🔗 Related Documentation
+
+- [Backend Guide](./BACKEND.md) - API architecture
+- [Frontend Guide](./FRONTEND.md) - Angular application
+- [Database Schema](./DATABASE.md) - Database structure
+- [Troubleshooting](./TROUBLESHOOTING.md) - Common issues
+
+---
+
+**Need Help?** Open an issue on [GitHub](https://github.com/Mostafa-SAID7/Naar-Noor/issues).

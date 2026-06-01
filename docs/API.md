@@ -1,1 +1,524 @@
-# 📡 API Documentation\n\nComplete REST API documentation for Naar & Noor.\n\n## Base URL\n\n```\nhttp://localhost:5000/api\n```\n\n## Authentication\n\nCurrently, the API does not require authentication. Future versions may implement JWT-based authentication.\n\n## Response Format\n\nAll responses are in JSON format.\n\n### Success Response\n\n```json\n{\n  \"data\": {},\n  \"success\": true,\n  \"message\": \"Operation successful\"\n}\n```\n\n### Error Response\n\n```json\n{\n  \"error\": \"Error message\",\n  \"statusCode\": 400\n}\n```\n\n## Endpoints\n\n### Chefs\n\n#### Get All Chefs\n\n**Request:**\n```http\nGET /api/chefs\n```\n\n**Response:**\n```json\n[\n  {\n    \"id\": 1,\n    \"name\": \"Chef Arjun\",\n    \"specialty\": \"Indian Cuisine\",\n    \"bio\": \"Expert in traditional Indian cooking\",\n    \"imageUrl\": \"https://example.com/chef-arjun.jpg\",\n    \"createdAt\": \"2026-05-26T10:00:00Z\",\n    \"updatedAt\": \"2026-05-26T10:00:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Chef Maya\",\n    \"specialty\": \"Fusion Cuisine\",\n    \"bio\": \"Creative fusion chef\",\n    \"imageUrl\": \"https://example.com/chef-maya.jpg\",\n    \"createdAt\": \"2026-05-26T10:00:00Z\",\n    \"updatedAt\": \"2026-05-26T10:00:00Z\"\n  }\n]\n```\n\n**Status Code:** 200 OK\n\n---\n\n### Menu Items\n\n#### Get All Menu Items\n\n**Request:**\n```http\nGET /api/menu\n```\n\n**Response:**\n```json\n[\n  {\n    \"id\": 1,\n    \"name\": \"Tandoori Chicken\",\n    \"description\": \"Grilled chicken marinated in yogurt and spices\",\n    \"price\": 14.99,\n    \"category\": \"Mains\",\n    \"imageUrl\": \"https://example.com/tandoori-chicken.jpg\",\n    \"isAvailable\": true,\n    \"createdAt\": \"2026-05-26T10:00:00Z\",\n    \"updatedAt\": \"2026-05-26T10:00:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Butter Chicken\",\n    \"description\": \"Tender chicken in creamy tomato sauce\",\n    \"price\": 13.99,\n    \"category\": \"Mains\",\n    \"imageUrl\": \"https://example.com/butter-chicken.jpg\",\n    \"isAvailable\": true,\n    \"createdAt\": \"2026-05-26T10:00:00Z\",\n    \"updatedAt\": \"2026-05-26T10:00:00Z\"\n  }\n]\n```\n\n**Status Code:** 200 OK\n\n**Query Parameters:**\n- `category` (optional): Filter by category (Starters, Mains, Cocktails)\n- `available` (optional): Filter by availability (true/false)\n\n---\n\n### Reservations\n\n#### Get All Reservations\n\n**Request:**\n```http\nGET /api/reservations\n```\n\n**Response:**\n```json\n[\n  {\n    \"id\": 1,\n    \"guestName\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"phoneNumber\": \"+1-555-0123\",\n    \"reservationDate\": \"2026-06-15T19:00:00Z\",\n    \"numberOfGuests\": 4,\n    \"specialRequests\": \"Window seat preferred\",\n    \"status\": \"Confirmed\",\n    \"createdAt\": \"2026-05-26T10:00:00Z\",\n    \"updatedAt\": \"2026-05-26T10:00:00Z\"\n  }\n]\n```\n\n**Status Code:** 200 OK\n\n#### Create Reservation\n\n**Request:**\n```http\nPOST /api/reservations\nContent-Type: application/json\n\n{\n  \"guestName\": \"Jane Smith\",\n  \"email\": \"jane@example.com\",\n  \"phoneNumber\": \"+1-555-0456\",\n  \"reservationDate\": \"2026-06-20T19:30:00Z\",\n  \"numberOfGuests\": 2,\n  \"specialRequests\": \"Vegetarian options needed\"\n}\n```\n\n**Response:**\n```json\n{\n  \"id\": 2,\n  \"guestName\": \"Jane Smith\",\n  \"email\": \"jane@example.com\",\n  \"phoneNumber\": \"+1-555-0456\",\n  \"reservationDate\": \"2026-06-20T19:30:00Z\",\n  \"numberOfGuests\": 2,\n  \"specialRequests\": \"Vegetarian options needed\",\n  \"status\": \"Pending\",\n  \"createdAt\": \"2026-05-26T11:00:00Z\",\n  \"updatedAt\": \"2026-05-26T11:00:00Z\"\n}\n```\n\n**Status Code:** 201 Created\n\n**Validation Rules:**\n- `guestName`: Required, max 100 characters\n- `email`: Required, valid email format\n- `phoneNumber`: Required\n- `reservationDate`: Required, must be in the future\n- `numberOfGuests`: Required, 1-20 guests\n\n---\n\n### Reviews\n\n#### Get Approved Reviews\n\n**Request:**\n```http\nGET /api/reviews\n```\n\n**Response:**\n```json\n[\n  {\n    \"id\": 1,\n    \"guestName\": \"Alice Johnson\",\n    \"rating\": 5,\n    \"comment\": \"Excellent food and service!\",\n    \"isApproved\": true,\n    \"createdAt\": \"2026-05-20T10:00:00Z\",\n    \"updatedAt\": \"2026-05-20T10:00:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"guestName\": \"Bob Wilson\",\n    \"rating\": 4,\n    \"comment\": \"Great atmosphere and delicious food\",\n    \"isApproved\": true,\n    \"createdAt\": \"2026-05-21T10:00:00Z\",\n    \"updatedAt\": \"2026-05-21T10:00:00Z\"\n  }\n]\n```\n\n**Status Code:** 200 OK\n\n**Query Parameters:**\n- `rating` (optional): Filter by rating (1-5)\n- `limit` (optional): Limit number of results (default: 10)\n\n---\n\n### Contact\n\n#### Submit Contact Inquiry\n\n**Request:**\n```http\nPOST /api/contact\nContent-Type: application/json\n\n{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"subject\": \"Catering Inquiry\",\n  \"message\": \"I would like to inquire about catering services for my event.\"\n}\n```\n\n**Response:**\n```json\n{\n  \"id\": 1,\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"subject\": \"Catering Inquiry\",\n  \"message\": \"I would like to inquire about catering services for my event.\",\n  \"createdAt\": \"2026-05-26T12:00:00Z\"\n}\n```\n\n**Status Code:** 201 Created\n\n**Validation Rules:**\n- `name`: Required, max 100 characters\n- `email`: Required, valid email format\n- `subject`: Required, max 200 characters\n- `message`: Required, max 1000 characters\n\n---\n\n### Health Check\n\n#### Get API Health Status\n\n**Request:**\n```http\nGET /health\n```\n\n**Response:**\n```json\n{\n  \"status\": \"Healthy\",\n  \"timestamp\": \"2026-05-26T12:00:00Z\",\n  \"version\": \"1.0.0\"\n}\n```\n\n**Status Code:** 200 OK\n\n---\n\n## Error Codes\n\n| Code | Message | Description |\n|------|---------|-------------|\n| 400 | Bad Request | Invalid request parameters |\n| 404 | Not Found | Resource not found |\n| 409 | Conflict | Resource already exists |\n| 422 | Unprocessable Entity | Validation error |\n| 500 | Internal Server Error | Server error |\n\n## Rate Limiting\n\nCurrently, there is no rate limiting. Future versions may implement rate limiting.\n\n## Pagination\n\nFor endpoints that return lists, pagination can be controlled with query parameters:\n\n```http\nGET /api/menu?page=1&pageSize=10\n```\n\n**Parameters:**\n- `page`: Page number (default: 1)\n- `pageSize`: Items per page (default: 10, max: 100)\n\n## Filtering\n\nSupported filters vary by endpoint. Check individual endpoint documentation.\n\n**Example:**\n```http\nGET /api/menu?category=Mains&available=true\n```\n\n## Sorting\n\nSupported sorting varies by endpoint.\n\n**Example:**\n```http\nGET /api/menu?sortBy=price&sortOrder=asc\n```\n\n## CORS\n\nCORS is enabled for all origins in development. In production, configure allowed origins in `appsettings.json`.\n\n## Swagger Documentation\n\nInteractive API documentation is available at:\n\n```\nhttp://localhost:5000/swagger\n```\n\n## Example Requests\n\n### Using cURL\n\n**Get all chefs:**\n```bash\ncurl -X GET http://localhost:5000/api/chefs\n```\n\n**Create reservation:**\n```bash\ncurl -X POST http://localhost:5000/api/reservations \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"guestName\": \"Jane Smith\",\n    \"email\": \"jane@example.com\",\n    \"phoneNumber\": \"+1-555-0456\",\n    \"reservationDate\": \"2026-06-20T19:30:00Z\",\n    \"numberOfGuests\": 2,\n    \"specialRequests\": \"Vegetarian options needed\"\n  }'\n```\n\n### Using JavaScript/Fetch\n\n```javascript\n// Get all chefs\nfetch('http://localhost:5000/api/chefs')\n  .then(response => response.json())\n  .then(data => console.log(data));\n\n// Create reservation\nfetch('http://localhost:5000/api/reservations', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({\n    guestName: 'Jane Smith',\n    email: 'jane@example.com',\n    phoneNumber: '+1-555-0456',\n    reservationDate: '2026-06-20T19:30:00Z',\n    numberOfGuests: 2,\n    specialRequests: 'Vegetarian options needed'\n  })\n})\n  .then(response => response.json())\n  .then(data => console.log(data));\n```\n\n---\n\nFor more information, visit the [Swagger Documentation](http://localhost:5000/swagger).\n
+# 📡 API Documentation
+
+Complete REST API reference for **Naar & Noor** backend services.
+
+---
+
+## 🌐 Base URL
+
+| Environment | URL |
+|-------------|-----|
+| **Development** | `http://localhost:8080/api` |
+| **Production** | `https://naar-noor-api.vercel.app/api` |
+
+---
+
+## 🔐 Authentication
+
+Currently, the API does not require authentication. Future versions will implement **JWT-based authentication**.
+
+---
+
+## 📦 Response Format
+
+### Success Response
+
+```json
+{
+  "id": 1,
+  "name": "Chef Arjun",
+  "specialty": "Indian Cuisine"
+}
+```
+
+### Error Response
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "Email": ["Email is required"]
+  }
+}
+```
+
+---
+
+## 📚 Endpoints
+
+### 👨‍🍳 Chefs
+
+#### Get All Chefs
+
+Retrieve a list of all chefs.
+
+```http
+GET /api/chefs
+```
+
+**Response: 200 OK**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Chef Arjun",
+    "specialty": "Indian Cuisine",
+    "bio": "Expert in traditional Indian cooking with 15 years of experience",
+    "imageUrl": "https://example.com/chefs/arjun.jpg",
+    "createdAt": "2026-05-26T10:00:00Z",
+    "updatedAt": "2026-05-26T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Chef Maya",
+    "specialty": "Fusion Cuisine",
+    "bio": "Creative fusion chef blending Eastern and Western flavors",
+    "imageUrl": "https://example.com/chefs/maya.jpg",
+    "createdAt": "2026-05-26T10:00:00Z",
+    "updatedAt": "2026-05-26T10:00:00Z"
+  }
+]
+```
+
+---
+
+### 🍽️ Menu Items
+
+#### Get All Menu Items
+
+Retrieve the complete menu.
+
+```http
+GET /api/menu
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `category` | string | Filter by category: `Starters`, `Mains`, `Cocktails` |
+| `available` | boolean | Filter by availability |
+
+**Example:**
+
+```http
+GET /api/menu?category=Mains&available=true
+```
+
+**Response: 200 OK**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Tandoori Chicken",
+    "description": "Grilled chicken marinated in yogurt and aromatic spices",
+    "price": 14.99,
+    "category": "Mains",
+    "imageUrl": "https://example.com/menu/tandoori-chicken.jpg",
+    "isAvailable": true,
+    "createdAt": "2026-05-26T10:00:00Z",
+    "updatedAt": "2026-05-26T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Butter Chicken",
+    "description": "Tender chicken in creamy tomato sauce with butter",
+    "price": 13.99,
+    "category": "Mains",
+    "imageUrl": "https://example.com/menu/butter-chicken.jpg",
+    "isAvailable": true,
+    "createdAt": "2026-05-26T10:00:00Z",
+    "updatedAt": "2026-05-26T10:00:00Z"
+  }
+]
+```
+
+---
+
+### 📅 Reservations
+
+#### Get All Reservations
+
+Retrieve all reservations.
+
+```http
+GET /api/reservations
+```
+
+**Response: 200 OK**
+
+```json
+[
+  {
+    "id": 1,
+    "guestName": "John Doe",
+    "email": "john@example.com",
+    "phoneNumber": "+1-555-0123",
+    "reservationDate": "2026-06-15T19:00:00Z",
+    "numberOfGuests": 4,
+    "specialRequests": "Window seat preferred",
+    "status": "Confirmed",
+    "createdAt": "2026-05-26T10:00:00Z",
+    "updatedAt": "2026-05-26T10:00:00Z"
+  }
+]
+```
+
+#### Create Reservation
+
+Create a new reservation.
+
+```http
+POST /api/reservations
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "guestName": "Jane Smith",
+  "email": "jane@example.com",
+  "phoneNumber": "+1-555-0456",
+  "reservationDate": "2026-06-20T19:30:00Z",
+  "numberOfGuests": 2,
+  "specialRequests": "Vegetarian options needed"
+}
+```
+
+**Validation Rules:**
+
+| Field | Rules |
+|-------|-------|
+| `guestName` | Required, max 100 characters |
+| `email` | Required, valid email format |
+| `phoneNumber` | Required |
+| `reservationDate` | Required, must be in the future |
+| `numberOfGuests` | Required, between 1-20 |
+| `specialRequests` | Optional, max 500 characters |
+
+**Response: 201 Created**
+
+```json
+{
+  "id": 2,
+  "guestName": "Jane Smith",
+  "email": "jane@example.com",
+  "phoneNumber": "+1-555-0456",
+  "reservationDate": "2026-06-20T19:30:00Z",
+  "numberOfGuests": 2,
+  "specialRequests": "Vegetarian options needed",
+  "status": "Pending",
+  "createdAt": "2026-05-26T11:00:00Z",
+  "updatedAt": "2026-05-26T11:00:00Z"
+}
+```
+
+**Error Response: 400 Bad Request**
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "Email": ["Email is required"],
+    "NumberOfGuests": ["Number of guests must be between 1 and 20"]
+  }
+}
+```
+
+---
+
+### ⭐ Reviews
+
+#### Get Approved Reviews
+
+Retrieve all approved customer reviews.
+
+```http
+GET /api/reviews
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `rating` | integer | Filter by rating (1-5) |
+| `limit` | integer | Limit results (default: 10, max: 100) |
+
+**Example:**
+
+```http
+GET /api/reviews?rating=5&limit=5
+```
+
+**Response: 200 OK**
+
+```json
+[
+  {
+    "id": 1,
+    "guestName": "Alice Johnson",
+    "rating": 5,
+    "comment": "Excellent food and outstanding service! Highly recommend.",
+    "isApproved": true,
+    "createdAt": "2026-05-20T10:00:00Z",
+    "updatedAt": "2026-05-20T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "guestName": "Bob Wilson",
+    "rating": 4,
+    "comment": "Great atmosphere and delicious food. Will visit again!",
+    "isApproved": true,
+    "createdAt": "2026-05-21T10:00:00Z",
+    "updatedAt": "2026-05-21T10:00:00Z"
+  }
+]
+```
+
+---
+
+### 📧 Contact
+
+#### Submit Contact Inquiry
+
+Submit a contact form inquiry.
+
+```http
+POST /api/contact
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "subject": "Catering Inquiry",
+  "message": "I would like to inquire about catering services for my corporate event on July 15th."
+}
+```
+
+**Validation Rules:**
+
+| Field | Rules |
+|-------|-------|
+| `name` | Required, max 100 characters |
+| `email` | Required, valid email format |
+| `subject` | Required, max 200 characters |
+| `message` | Required, max 1000 characters |
+
+**Response: 201 Created**
+
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com",
+  "subject": "Catering Inquiry",
+  "message": "I would like to inquire about catering services for my corporate event on July 15th.",
+  "createdAt": "2026-05-26T12:00:00Z"
+}
+```
+
+---
+
+### 🏥 Health Check
+
+#### Get API Health Status
+
+Check if the API is running and healthy.
+
+```http
+GET /health
+```
+
+**Response: 200 OK**
+
+```json
+{
+  "status": "Healthy",
+  "timestamp": "2026-05-26T12:00:00Z",
+  "version": "1.0.0",
+  "database": "Connected"
+}
+```
+
+---
+
+## 🚨 HTTP Status Codes
+
+| Code | Status | Description |
+|------|--------|-------------|
+| **200** | OK | Request successful |
+| **201** | Created | Resource created successfully |
+| **400** | Bad Request | Invalid request parameters or validation error |
+| **404** | Not Found | Resource not found |
+| **409** | Conflict | Resource already exists |
+| **422** | Unprocessable Entity | Validation error |
+| **500** | Internal Server Error | Server error |
+
+---
+
+## 📄 Pagination
+
+For endpoints returning lists, use pagination parameters:
+
+```http
+GET /api/menu?page=1&pageSize=10
+```
+
+**Parameters:**
+
+| Parameter | Type | Default | Max |
+|-----------|------|---------|-----|
+| `page` | integer | 1 | - |
+| `pageSize` | integer | 10 | 100 |
+
+**Response Headers:**
+
+```
+X-Total-Count: 45
+X-Page: 1
+X-Page-Size: 10
+X-Total-Pages: 5
+```
+
+---
+
+## 🔍 Filtering & Sorting
+
+### Filtering
+
+```http
+GET /api/menu?category=Mains&available=true
+```
+
+### Sorting
+
+```http
+GET /api/menu?sortBy=price&sortOrder=asc
+```
+
+**Sort Orders:**
+- `asc` - Ascending
+- `desc` - Descending
+
+---
+
+## 🌐 CORS
+
+CORS is configured to allow requests from:
+
+- **Development:** `http://localhost:5000`
+- **Production:** `https://naar-noor.vercel.app`
+
+---
+
+## 📖 Interactive Documentation
+
+Access **Swagger UI** for interactive API testing:
+
+```
+http://localhost:8080/swagger
+```
+
+---
+
+## 💻 Code Examples
+
+### JavaScript (Fetch API)
+
+```javascript
+// Get all chefs
+fetch('http://localhost:8080/api/chefs')
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+
+// Create reservation
+fetch('http://localhost:8080/api/reservations', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    guestName: 'Jane Smith',
+    email: 'jane@example.com',
+    phoneNumber: '+1-555-0456',
+    reservationDate: '2026-06-20T19:30:00Z',
+    numberOfGuests: 2,
+    specialRequests: 'Vegetarian options needed'
+  })
+})
+  .then(response => response.json())
+  .then(data => console.log('Reservation created:', data))
+  .catch(error => console.error('Error:', error));
+```
+
+### cURL
+
+```bash
+# Get all chefs
+curl -X GET http://localhost:8080/api/chefs
+
+# Create reservation
+curl -X POST http://localhost:8080/api/reservations \
+  -H "Content-Type: application/json" \
+  -d '{
+    "guestName": "Jane Smith",
+    "email": "jane@example.com",
+    "phoneNumber": "+1-555-0456",
+    "reservationDate": "2026-06-20T19:30:00Z",
+    "numberOfGuests": 2,
+    "specialRequests": "Vegetarian options needed"
+  }'
+```
+
+### C# (HttpClient)
+
+```csharp
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+
+// Get all chefs
+var client = new HttpClient();
+var response = await client.GetAsync("http://localhost:8080/api/chefs");
+var chefs = await response.Content.ReadAsStringAsync();
+
+// Create reservation
+var reservation = new
+{
+    guestName = "Jane Smith",
+    email = "jane@example.com",
+    phoneNumber = "+1-555-0456",
+    reservationDate = "2026-06-20T19:30:00Z",
+    numberOfGuests = 2,
+    specialRequests = "Vegetarian options needed"
+};
+
+var json = JsonSerializer.Serialize(reservation);
+var content = new StringContent(json, Encoding.UTF8, "application/json");
+var response = await client.PostAsync("http://localhost:8080/api/reservations", content);
+```
+
+---
+
+## 🔗 Related Documentation
+
+- [Backend Guide](./BACKEND.md) - Learn about the API architecture
+- [Database Schema](./DATABASE.md) - Understand the data model
+- [Deployment Guide](./DEPLOYMENT.md) - Deploy the API
+- [Troubleshooting](./TROUBLESHOOTING.md) - Common issues and solutions
+
+---
+
+**Need Help?** Open an issue on [GitHub](https://github.com/Mostafa-SAID7/Naar-Noor/issues).

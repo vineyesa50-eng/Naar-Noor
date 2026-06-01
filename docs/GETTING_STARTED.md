@@ -1,41 +1,67 @@
 # 🚀 Getting Started
 
-This guide will help you set up the Naar & Noor project locally.
+Welcome to **Naar & Noor**! This guide will walk you through setting up the project locally in just a few minutes.
 
-## Prerequisites
+---
 
-Before you begin, ensure you have the following installed:
+## 📋 Prerequisites
 
-- **Node.js** 18.0.0 or higher ([Download](https://nodejs.org/))
-- **.NET SDK** 8.0 or higher ([Download](https://dotnet.microsoft.com/download))
-- **Git** ([Download](https://git-scm.com/))
-- **npm** or **pnpm** (comes with Node.js)
+Before you begin, ensure you have the following installed on your system:
 
-## Installation Steps
+| Tool | Version | Download Link |
+|------|---------|---------------|
+| **Node.js** | 18.0+ | [nodejs.org](https://nodejs.org/) |
+| **.NET SDK** | 8.0+ | [dotnet.microsoft.com](https://dotnet.microsoft.com/download) |
+| **SQL Server** | 2019+ | [microsoft.com/sql-server](https://www.microsoft.com/sql-server) |
+| **Git** | Latest | [git-scm.com](https://git-scm.com/) |
 
-### 1. Clone the Repository
+---
+
+## 🎯 Quick Start (5 Minutes)
+
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/Mostafa-SAID7/Naar-Noor.git
 cd Naar-Noor
 ```
 
-### 2. Frontend Setup
-
-Navigate to the frontend directory and install dependencies:
+### Step 2: Setup Frontend
 
 ```bash
 cd naar-noor
 npm install
-```
-
-#### Running the Frontend
-
-**Development Mode:**
-```bash
 npm run dev
 ```
-The application will be available at `http://localhost:4200`
+
+✅ **Frontend running at:** `http://localhost:5000`
+
+### Step 3: Setup Backend
+
+Open a new terminal:
+
+```bash
+cd api-server
+dotnet restore
+dotnet run --project src/NaarNoor.API/NaarNoor.API.csproj
+```
+
+✅ **Backend running at:** `http://localhost:8080`  
+✅ **Swagger docs at:** `http://localhost:8080/swagger`
+
+---
+
+## 🔧 Detailed Setup
+
+### Frontend Configuration
+
+The frontend is built with **Angular 18** and **Tailwind CSS**.
+
+**Development Server:**
+```bash
+cd naar-noor
+npm run dev
+```
 
 **Production Build:**
 ```bash
@@ -47,77 +73,54 @@ npm run build
 npm run serve
 ```
 
-### 3. Backend Setup
+**Environment Files:**
+- `src/environments/environment.ts` - Development config
+- `src/environments/environment.prod.ts` - Production config
 
-Navigate to the backend directory:
+### Backend Configuration
 
+The backend uses **.NET 8** with **Clean Architecture** and **CQRS** pattern.
+
+**Run Development Server:**
 ```bash
-cd ../api-server
-```
-
-#### Restore Dependencies
-
-```bash
-dotnet restore
-```
-
-#### Running the Backend
-
-**Development Mode:**
-```bash
-./run-dev.sh
-```
-Or on Windows:
-```bash
+cd api-server
 dotnet run --project src/NaarNoor.API/NaarNoor.API.csproj
 ```
 
-The API will be available at `http://localhost:5000`
-
-#### Database Setup
-
-The application uses Entity Framework Core with SQL Server. Migrations are automatically applied on startup.
-
-To manually apply migrations:
+**Apply Database Migrations:**
 ```bash
 dotnet ef database update --project src/NaarNoor.Infrastructure
 ```
 
-## Verification
+**Connection String:**
 
-### Frontend Check
-- Open `http://localhost:4200` in your browser
-- You should see the Naar & Noor homepage
-
-### Backend Check
-- Open `http://localhost:5000/swagger` in your browser
-- You should see the Swagger API documentation
-
-## Environment Configuration
-
-### Frontend
-No additional configuration needed for development.
-
-### Backend
-Create an `appsettings.Development.json` file in `api-server/src/NaarNoor.API/`:
+Update `appsettings.json` with your SQL Server connection:
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=.;Database=NaarNoor;Trusted_Connection=true;"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information"
-    }
+    "DefaultConnection": "Server=db54355.public.databaseasp.net; Database=db54355; User Id=db54355; Password=eW!62%tA=bT7; Encrypt=True; TrustServerCertificate=True;"
   }
 }
 ```
 
-## Troubleshooting
+---
+
+## ✅ Verification Checklist
+
+After setup, verify everything is working:
+
+- [ ] Frontend loads at `http://localhost:5000`
+- [ ] Backend API responds at `http://localhost:8080/health`
+- [ ] Swagger documentation accessible at `http://localhost:8080/swagger`
+- [ ] Database connection successful
+- [ ] No console errors in browser or terminal
+
+---
+
+## 🐛 Common Issues
 
 ### Port Already in Use
-If port 4200 or 5000 is already in use:
 
 **Frontend:**
 ```bash
@@ -129,24 +132,57 @@ npm run dev -- --port 4300
 dotnet run --project src/NaarNoor.API/NaarNoor.API.csproj --urls "http://localhost:5001"
 ```
 
-### Database Connection Issues
-- Ensure SQL Server is running
-- Check the connection string in `appsettings.json`
-- Verify database permissions
+### Database Connection Failed
+
+1. Verify SQL Server is running
+2. Check connection string in `appsettings.json`
+3. Ensure database exists or run migrations
+4. Verify firewall allows port 1433
 
 ### Node Modules Issues
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-## Next Steps
+### Build Errors
 
-- Read the [Project Structure](./PROJECT_STRUCTURE.md) guide
-- Check the [API Documentation](./API.md)
-- Review the [Frontend Guide](./FRONTEND.md)
-- Explore the [Backend Guide](./BACKEND.md)
+**Frontend:**
+```bash
+ng cache clean
+npm run build
+```
+
+**Backend:**
+```bash
+dotnet clean
+dotnet restore
+dotnet build
+```
 
 ---
 
-**Need Help?** Check the [Troubleshooting](./TROUBLESHOOTING.md) guide.
+## 📚 Next Steps
+
+Now that you're set up, explore these guides:
+
+- 📁 [Project Structure](./PROJECT_STRUCTURE.md) - Understand the codebase organization
+- 🎨 [Frontend Guide](./FRONTEND.md) - Learn about Angular components and services
+- 🔧 [Backend Guide](./BACKEND.md) - Explore the .NET API architecture
+- 📡 [API Documentation](./API.md) - Review all available endpoints
+- 🗄️ [Database Schema](./DATABASE.md) - Understand the data model
+
+---
+
+## 💡 Pro Tips
+
+- Use **VS Code** with Angular and C# extensions for the best development experience
+- Enable **auto-save** in your editor to see changes instantly
+- Keep both frontend and backend terminals open side-by-side
+- Use **Swagger UI** to test API endpoints interactively
+- Check the [Troubleshooting Guide](./TROUBLESHOOTING.md) if you encounter issues
+
+---
+
+**Need Help?** Open an issue on [GitHub](https://github.com/Mostafa-SAID7/Naar-Noor/issues) or check the [Troubleshooting Guide](./TROUBLESHOOTING.md).
