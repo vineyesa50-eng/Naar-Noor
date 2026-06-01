@@ -32,36 +32,13 @@ dotnet run --project src/NaarNoor.API/NaarNoor.API.csproj
 
 ## 📁 Project Structure
 
-```
-api-server/
-├── src/
-│   ├── NaarNoor.API/              # API Layer (Controllers, Middleware)
-│   ├── NaarNoor.Application/      # Business Logic (CQRS)
-│   ├── NaarNoor.Domain/           # Domain Entities & Rules
-│   └── NaarNoor.Infrastructure/   # Data Access & External Services
-└── NaarNoor.sln                   # Solution File
-```
+For detailed project structure information, see [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md).
 
 ---
 
-## 🏗️ Architecture Layers
+## 🏗️ Architecture Overview
 
-The backend follows **Clean Architecture** with **CQRS** pattern:
-
-```
-┌─────────────────────────────────────┐
-│    API Layer (Controllers)          │  ← HTTP Requests/Responses
-├─────────────────────────────────────┤
-│    Application Layer                │  ← Business Logic (Commands/Queries)
-│    (Commands, Queries, Handlers)    │
-├─────────────────────────────────────┤
-│    Domain Layer                     │  ← Core Business Entities & Rules
-│    (Entities, Enums, Interfaces)    │
-├─────────────────────────────────────┤
-│    Infrastructure Layer             │  ← Database, External Services
-│    (DbContext, Repositories)        │
-└─────────────────────────────────────┘
-```
+The backend follows **Clean Architecture** with **CQRS** pattern. For comprehensive architecture details including layer diagrams and design patterns, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ---
 

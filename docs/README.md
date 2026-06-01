@@ -1,4 +1,4 @@
-# 📚 Documentation Index
+# 📖 Documentation Index
 
 Welcome to the Naar & Noor documentation. This folder contains comprehensive guides for development, deployment, and troubleshooting.
 

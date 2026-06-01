@@ -33,27 +33,9 @@ Build artifacts are stored in `dist/lost-yeti/browser/`
 
 ---
 
-## 📁 Project Structure\n\n```
-naar-noor/
-├── src/
-│   ├── app/
-│   │   ├── components/          # Reusable UI components
-│   │   ├── pages/               # Full page components
-│   │   ├── sections/            # Feature sections
-│   │   ├── services/            # API and business logic
-│   │   ├── app.component.ts     # Root component
-│   │   ├── app.config.ts        # Application configuration
-│   │   └── app.routes.ts        # Route definitions
-│   ├── assets/                  # Static files (images, icons)
-│   ├── data/                    # Mock data and constants
-│   ├── environments/            # Environment configurations
-│   ├── styles.css               # Global styles
-│   └── main.ts                  # Application entry point
-├── angular.json                 # Angular CLI configuration
-├── package.json                 # Dependencies
-├── tailwind.config.js           # Tailwind CSS configuration
-└── tsconfig.json                # TypeScript configuration
-```
+## 📁 Project Structure
+
+For detailed project structure and file organization, see [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md).
 
 ---
 
