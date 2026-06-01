@@ -698,7 +698,7 @@ ps aux | grep dotnet
 **1. Analyze Bundle Size:**
 ```bash
 ng build --stats-json
-npx webpack-bundle-analyzer dist/lost-yeti/browser/stats.json
+npx webpack-bundle-analyzer dist/naar-noor/browser/stats.json
 ```
 
 **2. Implement Lazy Loading:**

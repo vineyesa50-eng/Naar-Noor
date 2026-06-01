@@ -28,7 +28,7 @@ cd naar-noor
 npm run build
 ```
 
-✅ **Output:** `dist/lost-yeti/browser/`
+✅ **Output:** `dist/naar-noor/browser/`
 
 ---
 
@@ -52,7 +52,7 @@ vercel
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/lost-yeti/browser",
+  "outputDirectory": "dist/naar-noor/browser",
   "installCommand": "npm ci",
   "env": {
     "ANGULAR_CLI_ANALYTICS": "false"
@@ -80,7 +80,7 @@ Set in Vercel dashboard:
 ```toml
 [build]
   command = "npm run build"
-  publish = "dist/lost-yeti/browser"
+  publish = "dist/naar-noor/browser"
 
 [[redirects]]
   from = "/*"
@@ -112,7 +112,7 @@ RUN npm run build
 
 # Production stage
 FROM nginx:alpine
-COPY --from=builder /app/dist/lost-yeti/browser /usr/share/nginx/html
+COPY --from=builder /app/dist/naar-noor/browser /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
@@ -178,7 +178,7 @@ aws s3 mb s3://naar-noor-frontend
 **Step 2: Upload Build**
 
 ```bash
-aws s3 sync dist/lost-yeti/browser/ s3://naar-noor-frontend --delete
+aws s3 sync dist/naar-noor/browser/ s3://naar-noor-frontend --delete
 ```
 
 **Step 3: Configure CloudFront**

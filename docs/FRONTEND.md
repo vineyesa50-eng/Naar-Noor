@@ -29,7 +29,7 @@ The app will automatically reload when you save changes to source files.
 npm run build
 ```
 
-Build artifacts are stored in `dist/lost-yeti/browser/`
+Build artifacts are stored in `dist/naar-noor/browser/`
 
 ---
 

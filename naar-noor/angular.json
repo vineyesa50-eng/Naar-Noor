@@ -2,7 +2,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "lost-yeti": {
+    "naar-noor": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
           "builder": "@angular/build:application",
           "options": {
             "outputPath": {
-              "base": "dist/lost-yeti"
+              "base": "dist/naar-noor"
             },
             "index": "src/index.html",
             "polyfills": ["zone.js"],
@@ -75,7 +75,7 @@
           },
           "configurations": {
             "development": {
-              "buildTarget": "lost-yeti:build:development"
+              "buildTarget": "naar-noor:build:development"
             }
           },
           "defaultConfiguration": "development"

@@ -21,6 +21,6 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateOrderCommand command, CancellationToken cancellationToken)
     {
         var id = await _mediator.Send(command, cancellationToken);
-        return CreatedAtAction(nameof(Create), new { id }, new { id });
+        return Created(string.Empty, new { id });
     }
 }
